@@ -58,11 +58,11 @@ add_action('after_setup_theme', 'minimalcode_setup');
  * Enqueue scripts and styles
  */
 function minimalcode_scripts() {
-    // Main stylesheet
-    wp_enqueue_style('minimalcode-style', get_stylesheet_uri(), array(), '1.0.0');
-    
+    // Main stylesheet - use filemtime for cache busting
+    wp_enqueue_style('minimalcode-style', get_stylesheet_uri(), array(), filemtime(get_stylesheet_directory() . '/style.css'));
+
     // Custom styles
-    wp_enqueue_style('minimalcode-custom', get_template_directory_uri() . '/assets/css/custom.css', array(), '1.0.0');
+    wp_enqueue_style('minimalcode-custom', get_template_directory_uri() . '/assets/css/custom.css', array(), filemtime(get_template_directory() . '/assets/css/custom.css'));
     
     // Prism.js for code highlighting (dark mode compatible)
     wp_enqueue_style('prismjs', 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css', array(), '1.29.0');
@@ -81,7 +81,7 @@ function minimalcode_scripts() {
     }
     
     // Theme toggle script
-    wp_enqueue_script('minimalcode-theme', get_template_directory_uri() . '/assets/js/theme.js', array(), '1.0.0', true);
+    wp_enqueue_script('minimalcode-theme', get_template_directory_uri() . '/assets/js/theme.js', array(), filemtime(get_template_directory() . '/assets/js/theme.js'), true);
     
     // Comment reply script
     if (is_singular() && comments_open() && get_option('thread_comments')) {
