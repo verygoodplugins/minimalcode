@@ -35,8 +35,39 @@ function minimalcode_register_post_types() {
 			'has_archive'  => true,
 			'query_var'    => true,
 			'rewrite'      => array( 'slug' => 'projects' ),
-			'supports'     => array( 'title', 'excerpt', 'thumbnail', 'editor' ),
+			'supports'     => array( 'title', 'excerpt', 'thumbnail', 'editor', 'custom-fields' ),
 			'menu_icon'    => 'dashicons-portfolio',
+			'show_in_rest' => true,
+		)
+	);
+
+	// Register meta fields for REST API access.
+	register_post_meta(
+		'projects',
+		'_minimalcode_project_url',
+		array(
+			'type'         => 'string',
+			'single'       => true,
+			'show_in_rest' => true,
+		)
+	);
+
+	register_post_meta(
+		'projects',
+		'_minimalcode_github_url',
+		array(
+			'type'         => 'string',
+			'single'       => true,
+			'show_in_rest' => true,
+		)
+	);
+
+	register_post_meta(
+		'projects',
+		'_minimalcode_role',
+		array(
+			'type'         => 'string',
+			'single'       => true,
 			'show_in_rest' => true,
 		)
 	);
