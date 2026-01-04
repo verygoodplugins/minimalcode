@@ -10,12 +10,6 @@ get_header();
 
 <div class="container">
 	<div class="content-area">
-		<?php if ( is_home() && ! is_paged() ) : ?>
-			<header class="index-header">
-				<h1 class="index-title"><?php esc_html_e( 'Index', 'minimalcode' ); ?></h1>
-			</header>
-		<?php endif; ?>
-
 		<?php if ( have_posts() ) : ?>
 			<?php
 			$current_month = '';
