@@ -243,19 +243,107 @@
   const ReadingProgress = {
     init() {
       if (!document.body.classList.contains('single-post')) return;
-      
+
       const progressBar = document.createElement('div');
       progressBar.className = 'reading-progress';
       progressBar.innerHTML = '<div class="reading-progress-bar"></div>';
       document.body.appendChild(progressBar);
-      
+
       const bar = progressBar.querySelector('.reading-progress-bar');
-      
+
       window.addEventListener('scroll', () => {
         const windowHeight = window.innerHeight;
         const documentHeight = document.documentElement.scrollHeight - windowHeight;
         const scrolled = (window.scrollY / documentHeight) * 100;
         bar.style.width = Math.min(scrolled, 100) + '%';
+      });
+    }
+  };
+
+  // Table of Contents
+  const TableOfContents = {
+    headings: [],
+    tocList: null,
+
+    init() {
+      this.tocList = document.getElementById('toc-list');
+      if (!this.tocList) return;
+
+      const content = document.querySelector('.entry-content');
+      if (!content) return;
+
+      const headings = content.querySelectorAll('h2, h3');
+      if (headings.length === 0) {
+        // Hide TOC sidebar if no headings
+        const tocSidebar = document.querySelector('.post-toc-sidebar');
+        if (tocSidebar) tocSidebar.style.display = 'none';
+        return;
+      }
+
+      this.buildTOC(headings);
+      this.observeHeadings();
+    },
+
+    buildTOC(headings) {
+      headings.forEach((heading, index) => {
+        // Generate ID if not present
+        if (!heading.id) {
+          heading.id = this.slugify(heading.textContent) || `section-${index}`;
+        }
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `#${heading.id}`;
+        a.textContent = heading.textContent;
+        a.className = heading.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+
+        li.appendChild(a);
+        this.tocList.appendChild(li);
+
+        this.headings.push({
+          id: heading.id,
+          element: heading,
+          link: a
+        });
+      });
+    },
+
+    slugify(text) {
+      return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 50);
+    },
+
+    observeHeadings() {
+      const observerOptions = {
+        rootMargin: '-80px 0px -70% 0px',
+        threshold: 0
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            this.setActiveLink(entry.target.id);
+          }
+        });
+      }, observerOptions);
+
+      this.headings.forEach(({ element }) => {
+        observer.observe(element);
+      });
+    },
+
+    setActiveLink(activeId) {
+      this.headings.forEach(({ id, link }) => {
+        if (id === activeId) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
       });
     }
   };
@@ -266,6 +354,7 @@
       ThemeManager.init();
       SmoothScroll.init();
       SearchModal.init();
+      TableOfContents.init();
 
       // Wait a bit for Prism to finish highlighting
       setTimeout(() => {
@@ -278,6 +367,7 @@
     ThemeManager.init();
     SmoothScroll.init();
     SearchModal.init();
+    TableOfContents.init();
     setTimeout(() => {
       CodeCopyButton.init();
     }, 100);
