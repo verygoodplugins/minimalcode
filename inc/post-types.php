@@ -46,9 +46,13 @@ function minimalcode_register_post_types() {
 		'projects',
 		'_minimalcode_project_url',
 		array(
-			'type'         => 'string',
-			'single'       => true,
-			'show_in_rest' => true,
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'esc_url_raw',
+			'auth_callback'     => function() {
+				return current_user_can( 'edit_posts' );
+			},
 		)
 	);
 
@@ -56,9 +60,13 @@ function minimalcode_register_post_types() {
 		'projects',
 		'_minimalcode_github_url',
 		array(
-			'type'         => 'string',
-			'single'       => true,
-			'show_in_rest' => true,
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'esc_url_raw',
+			'auth_callback'     => function() {
+				return current_user_can( 'edit_posts' );
+			},
 		)
 	);
 
@@ -66,9 +74,13 @@ function minimalcode_register_post_types() {
 		'projects',
 		'_minimalcode_role',
 		array(
-			'type'         => 'string',
-			'single'       => true,
-			'show_in_rest' => true,
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'sanitize_text_field',
+			'auth_callback'     => function() {
+				return current_user_can( 'edit_posts' );
+			},
 		)
 	);
 }
