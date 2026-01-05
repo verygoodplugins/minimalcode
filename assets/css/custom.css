@@ -1531,7 +1531,7 @@ button {
 
 /* Center: Main content */
 .single-post {
-  max-width: 40em;
+  max-width: 100%;
 }
 
 .single-post .entry-header {
