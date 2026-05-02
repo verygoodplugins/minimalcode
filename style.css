@@ -213,11 +213,11 @@ pre code {
   padding: 0;
 }
 
-/* Blockquotes */
+/* Blockquotes — match .post-body p rhythm: no top margin, 1.2em bottom. */
 blockquote {
   border-left: 3px solid var(--bleed);
   padding: 0 0 0 1em;
-  margin: 1.2em 0;
+  margin: 0 0 1.2em;
   color: var(--ink-soft);
   font-style: italic;
 }

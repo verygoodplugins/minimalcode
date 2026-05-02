@@ -20,13 +20,9 @@
     },
     
     getPreferredTheme() {
-      const storedTheme = this.getStoredTheme();
-      if (storedTheme) {
-        return storedTheme;
-      }
-      
-      // Check system preference
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      // Default to light. Dark mode is opt-in via the toggle (or ⌘+Shift+D).
+      // System color-scheme preference is intentionally ignored.
+      return this.getStoredTheme() || 'light';
     },
     
     setTheme(theme) {
@@ -74,14 +70,6 @@
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
           e.preventDefault();
           this.toggleTheme();
-        }
-      });
-      
-      // Listen for system theme changes
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        // Only apply if user hasn't manually set a preference
-        if (!this.getStoredTheme()) {
-          this.setTheme(e.matches ? 'dark' : 'light');
         }
       });
     }
