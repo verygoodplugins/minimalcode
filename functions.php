@@ -276,6 +276,29 @@ function minimalcode_flush_virtual_rewrites_on_switch() {
 add_action('after_switch_theme', 'minimalcode_flush_virtual_rewrites_on_switch');
 
 /**
+ * Auto-flush rewrite rules once per deploy. The deploy workflow writes
+ * DEPLOY_SHA to the theme root on every build; we compare it against the
+ * stored option and flush exactly once when it changes. Catches new
+ * routes and refreshed CPT slugs without a manual permalink save.
+ */
+function minimalcode_maybe_flush_after_deploy() {
+    $sha_file = get_template_directory() . '/DEPLOY_SHA';
+    if (!is_readable($sha_file)) {
+        return;
+    }
+    $current = trim((string) file_get_contents($sha_file));
+    if ('' === $current) {
+        return;
+    }
+    if (get_option('minimalcode_deploy_sha') === $current) {
+        return;
+    }
+    flush_rewrite_rules();
+    update_option('minimalcode_deploy_sha', $current, false);
+}
+add_action('init', 'minimalcode_maybe_flush_after_deploy', 99);
+
+/**
  * Short-circuit the default main query for virtual routes — the templates
  * don't use the loop, so loading 10 posts per request is wasted DB work.
  */
