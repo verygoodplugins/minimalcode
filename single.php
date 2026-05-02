@@ -12,7 +12,10 @@ get_header();
 	<?php
 	while ( have_posts() ) :
 		the_post();
-		$is_autojack = ( get_the_author_meta( 'ID' ) == 2 );
+		// Source of truth is the explicit post-meta flag set in the Authorship meta box.
+		// Legacy posts authored by user ID 2 are treated as AutoJack as a one-time fallback.
+		$is_autojack = (bool) get_post_meta( get_the_ID(), '_minimalcode_autojack', true )
+			|| ( 2 === (int) get_the_author_meta( 'ID' ) );
 	?>
 		<div class="single-post-layout">
 			<!-- Left: Meta sidebar -->

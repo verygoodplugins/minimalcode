@@ -37,6 +37,9 @@ get_header();
                                     <?php echo get_the_date('F j, Y'); ?>
                                 </time>
                                 <span class="reading-time"><?php echo minimalcode_reading_time(); ?></span>
+                                <?php if ( get_post_meta( get_the_ID(), '_minimalcode_autojack', true ) ) : ?>
+                                    <span class="autojack-pill" aria-label="Written by AutoJack"><span class="autojack-pill-glyph" aria-hidden="true">🤖</span> AutoJack</span>
+                                <?php endif; ?>
                             </div>
                         </header>
 

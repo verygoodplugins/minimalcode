@@ -1746,3 +1746,233 @@ button {
     font-size: 1.75rem;
   }
 }
+
+/* ==========================================================================
+   AutoJack Pill (index + archive lists)
+   ========================================================================== */
+
+.autojack-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  padding: 0.15em 0.55em;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    135deg,
+    var(--autojack-grad-start),
+    var(--autojack-grad-end)
+  );
+  color: var(--autojack-grad-end);
+  border: 1px solid var(--autojack-border);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .autojack-pill {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.18),
+    rgba(139, 92, 246, 0.18)
+  );
+  color: #a5b4fc;
+}
+
+.autojack-pill-glyph {
+  font-size: 0.85em;
+  line-height: 1;
+}
+
+.entry-meta .autojack-pill,
+.post-meta .autojack-pill {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Header social squircles
+   ========================================================================== */
+
+.header-social {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.header-social li {
+  margin: 0;
+}
+
+.social-squircle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--fg-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.social-squircle:hover,
+.social-squircle:focus-visible {
+  color: var(--fg-primary);
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.social-squircle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.social-squircle svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 768px) {
+  .header-social {
+    display: none;
+  }
+}
+
+/* Search trigger label (visible on wider screens) */
+.search-trigger-label {
+  display: inline;
+}
+
+@media (max-width: 640px) {
+  .search-trigger-label {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Search Modal — live results
+   ========================================================================== */
+
+.search-modal-content {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+}
+
+.search-modal-results {
+  list-style: none;
+  margin: 0;
+  padding: var(--spacing-xs) 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.search-modal-results:empty {
+  display: none;
+}
+
+.search-modal-result {
+  margin: 0;
+  padding: 0;
+}
+
+.search-modal-result a {
+  display: block;
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  border-left: 2px solid transparent;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.search-modal-result[aria-selected="true"] a,
+.search-modal-result a:hover {
+  background-color: var(--accent-tint);
+  border-left-color: var(--accent);
+}
+
+.search-modal-result-title {
+  display: block;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  color: var(--text-primary);
+  margin-bottom: 0.15em;
+}
+
+.search-modal-result-excerpt {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-modal-results mark,
+.search-modal-result mark {
+  background-color: var(--accent-tint);
+  color: var(--accent);
+  padding: 0 0.1em;
+  border-radius: 2px;
+}
+
+.search-modal-empty {
+  padding: var(--spacing-md);
+  font-size: var(--fs-sm);
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.search-modal-hints {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-code);
+}
+
+.search-modal-hints kbd {
+  display: inline-block;
+  padding: 0.1em 0.4em;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  margin-right: 0.25em;
+}
+
+.search-modal-hints span + span {
+  border-left: 1px solid var(--border-color);
+  padding-left: var(--spacing-sm);
+}
+
+/* ==========================================================================
+   Spec-alignment polish
+   ========================================================================== */
+
+/* Single-post prose — cap to 700px per editorial spec */
+.single-post .entry-content {
+  max-width: var(--max-width-prose);
+}
+
+/* Featured image: rounded + 16:9 */
+.post-thumbnail img,
+.single-post .entry-featured-image img {
+  border-radius: var(--radius-lg);
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  width: 100%;
+  height: auto;
+}
