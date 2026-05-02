@@ -106,6 +106,19 @@ function minimalcode_reading_time() {
 }
 
 /**
+ * Return the first category name for compact newspaper-style labels.
+ */
+function minimalcode_primary_category_name() {
+    $categories = get_the_category();
+
+    if (!empty($categories)) {
+        return $categories[0]->name;
+    }
+
+    return __('Log', 'minimalcode');
+}
+
+/**
  * Custom excerpt length
  */
 function minimalcode_excerpt_length($length) {

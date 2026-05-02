@@ -8,8 +8,24 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://drunk.support
     steps:
       - uses: actions/checkout@v4
+
+      - name: Validate newspaper UI markers
+        run: php tests/theme-design-static.php
+
+      - name: Write deploy marker
+        run: |
+          printf '%s\n' "$GITHUB_SHA" > DEPLOY_SHA
+          {
+            printf 'repo=%s\n' "$GITHUB_REPOSITORY"
+            printf 'sha=%s\n' "$GITHUB_SHA"
+            printf 'run_id=%s\n' "$GITHUB_RUN_ID"
+            printf 'run_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'deployed_at=%s\n' "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          } > DEPLOY_INFO
 
       - name: Deploy via rsync
         uses: burnett01/rsync-deployments@6.0.0
@@ -20,3 +36,36 @@ jobs:
           remote_host: ${{ secrets.CLOUDWAYS_HOST }}
           remote_user: ${{ secrets.CLOUDWAYS_USER }}
           remote_key: ${{ secrets.CLOUDWAYS_SSH_KEY }}
+
+      - name: Verify deployed commit
+        run: |
+          set -euo pipefail
+
+          marker_url="${SITE_URL%/}/wp-content/themes/minimalcode/DEPLOY_SHA?check=${GITHUB_SHA}"
+
+          for attempt in 1 2 3 4 5; do
+            deployed_sha="$(curl -fsSL -H 'Cache-Control: no-cache' "$marker_url" || true)"
+            if [ "$deployed_sha" = "$GITHUB_SHA" ]; then
+              echo "Production is serving commit $GITHUB_SHA"
+              exit 0
+            fi
+
+            echo "Attempt ${attempt}: expected ${GITHUB_SHA}, got '${deployed_sha:-<empty>}'"
+            sleep 3
+          done
+
+          echo "Production did not serve the deployed commit marker." >&2
+          exit 1
+
+      - name: Smoke test live theme
+        run: |
+          set -euo pipefail
+
+          homepage="$(curl -fsSL -H 'Cache-Control: no-cache' "${SITE_URL%/}/?deploy-check=${GITHUB_SHA}")"
+          custom_css="$(curl -fsSL -H 'Cache-Control: no-cache' "${SITE_URL%/}/wp-content/themes/minimalcode/assets/css/custom.css?deploy-check=${GITHUB_SHA}")"
+
+          grep -q 'wp-content/themes/minimalcode/assets/css/custom.css' <<< "$homepage"
+          grep -q 'class="ticker"' <<< "$homepage"
+          grep -q 'class="masthead wrap"' <<< "$homepage"
+          grep -q -- '--paper' <<< "$custom_css"
+          grep -q '.entry-hash' <<< "$custom_css"

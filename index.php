@@ -8,67 +8,109 @@
 get_header();
 ?>
 
-<div class="container">
-	<div class="content-area">
+<div class="layout wrap">
+	<aside class="rail">
+		<div class="rail-block">
+			<h4 class="rail-h"><?php esc_html_e( 'Status', 'minimalcode' ); ?></h4>
+			<div class="rail-row"><span class="k">automem</span><span class="v ok">&bull; ok</span></div>
+			<div class="rail-row"><span class="k">autohub</span><span class="v ok">&bull; ok</span></div>
+			<div class="rail-row"><span class="k">autojack</span><span class="v ok">&bull; awake</span></div>
+			<div class="rail-row"><span class="k">wp-fusion</span><span class="v ok">&bull; 99.98</span></div>
+			<div class="rail-row"><span class="k">wakeword</span><span class="v warn">&bull; flaky</span></div>
+		</div>
+		<div class="rail-block">
+			<h4 class="rail-h"><?php esc_html_e( 'Counters', 'minimalcode' ); ?></h4>
+			<div class="rail-row"><span class="k">posts</span><span class="v"><?php echo esc_html( wp_count_posts()->publish ); ?></span></div>
+			<div class="rail-row"><span class="k">commits/wk</span><span class="v">147</span></div>
+			<div class="rail-row"><span class="k">memory nodes</span><span class="v">4.7M</span></div>
+			<div class="rail-row"><span class="k">aj autonom.</span><span class="v">31</span></div>
+		</div>
+		<div class="rail-block">
+			<div class="now-card">
+				<p><?php esc_html_e( 'Spent the morning chasing a citation bug. Spent the afternoon writing about it.', 'minimalcode' ); ?></p>
+				<p class="mono-note">// updated recently</p>
+			</div>
+		</div>
+	</aside>
+
+	<main class="main">
 		<?php if ( have_posts() ) : ?>
 			<?php
-			$current_month = '';
+			the_post();
+			$lede_id      = get_the_ID();
+			$lede_hash    = substr( md5( get_post_field( 'post_name', $lede_id ) ), 0, 6 );
+			$lede_excerpt = get_the_excerpt();
 			?>
-			<div class="posts-chronological">
+			<article id="post-<?php the_ID(); ?>" <?php post_class( 'lede' ); ?>>
+				<div class="lede-marker">FRESH · <?php echo esc_html( strtoupper( $lede_hash ) ); ?></div>
+				<div class="lede-content">
+					<span class="lede-eyebrow"><?php echo esc_html( minimalcode_primary_category_name() ); ?></span>
+					<h1 class="lede-title">
+						<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+					</h1>
+					<?php if ( $lede_excerpt ) : ?>
+						<p class="lede-deck"><?php echo esc_html( $lede_excerpt ); ?></p>
+					<?php endif; ?>
+					<div class="lede-meta">
+						<span><?php echo esc_html( strtoupper( get_the_date( 'M d Y' ) ) ); ?></span>
+						<span class="sep">/</span>
+						<span><?php echo esc_html( minimalcode_reading_time() ); ?></span>
+						<span class="sep">/</span>
+						<span><a href="<?php the_permalink(); ?>">read.entry →</a></span>
+					</div>
+				</div>
+			</article>
+
+			<div class="section-bar">
+				<span class="label"><?php esc_html_e( 'Log', 'minimalcode' ); ?></span>
+				<span><?php esc_html_e( 'chronological · most recent first', 'minimalcode' ); ?></span>
+				<span class="rule"></span>
+				<span><?php echo esc_html( $GLOBALS['wp_query']->found_posts ); ?> <?php esc_html_e( 'entries', 'minimalcode' ); ?></span>
+			</div>
+
+			<div class="log">
 				<?php
+				$current_month = '';
 				while ( have_posts() ) :
 					the_post();
-					$post_month = get_the_date( 'F Y' );
+					$post_month  = get_the_date( 'F Y' );
+					$post_hash   = substr( md5( get_post_field( 'post_name', get_the_ID() ) ), 0, 6 );
+					$is_autojack = (bool) get_post_meta( get_the_ID(), '_minimalcode_autojack', true );
 
-					// Output month header if it's a new month.
 					if ( $post_month !== $current_month ) :
-						if ( '' !== $current_month ) :
-							?>
-							</div><!-- .month-group -->
-							<?php
-						endif;
 						$current_month = $post_month;
 						?>
-						<h2 class="month-header"><?php echo esc_html( $post_month ); ?></h2>
-						<div class="month-group">
+						<div class="month-rule">
+							<span class="lhs serif"><?php echo esc_html( get_the_date( 'F' ) ); ?><span><?php echo esc_html( get_the_date( 'Y' ) ); ?></span></span>
+							<span class="ruling"></span>
+							<span class="rhs">// scroll ↓</span>
+						</div>
 					<?php endif; ?>
 
-					<?php $is_autojack = (bool) get_post_meta( get_the_ID(), '_minimalcode_autojack', true ); ?>
-					<article id="post-<?php the_ID(); ?>" <?php post_class( $is_autojack ? 'post-item-minimal is-autojack' : 'post-item-minimal' ); ?>>
-						<a href="<?php the_permalink(); ?>" class="post-link">
-							<span class="post-title"><?php the_title(); ?></span>
-							<span class="post-meta">
-								<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>">
-									<?php echo esc_html( get_the_date( 'M j' ) ); ?>
-								</time>
-								<?php
-								$tags = get_the_tags();
-								if ( $tags ) :
+					<a id="post-<?php the_ID(); ?>" <?php post_class( 'entry' ); ?> href="<?php the_permalink(); ?>">
+						<span class="entry-hash"><?php echo esc_html( $post_hash ); ?></span>
+						<span class="entry-date"><?php echo esc_html( strtoupper( get_the_date( 'M d' ) ) ); ?></span>
+						<span class="entry-title serif <?php echo $is_autojack ? 'aj' : ''; ?>"><?php the_title(); ?></span>
+						<span class="entry-tags">
+							<?php if ( $is_autojack ) : ?>
+								<span class="tag aj">autojack</span>
+							<?php endif; ?>
+							<?php
+							$tags = get_the_tags();
+							if ( $tags ) :
+								foreach ( array_slice( $tags, 0, 2 ) as $tag ) :
 									?>
-									<span class="post-tags-inline">
-										<?php
-										$tag_names = array_map(
-											function ( $tag ) {
-												return $tag->name;
-											},
-											$tags
-										);
-										echo esc_html( implode( ', ', array_slice( $tag_names, 0, 3 ) ) );
-										?>
-									</span>
-								<?php endif; ?>
-								<?php if ( $is_autojack ) : ?>
-									<span class="autojack-pill" aria-label="Written by AutoJack"><span class="autojack-pill-glyph" aria-hidden="true">🤖</span> AutoJack</span>
-								<?php endif; ?>
-							</span>
-						</a>
-					</article>
+									<span class="tag"><?php echo esc_html( $tag->name ); ?></span>
+									<?php
+								endforeach;
+							endif;
+							?>
+						</span>
+					</a>
 				<?php endwhile; ?>
-				</div><!-- .month-group (last) -->
-			</div><!-- .posts-chronological -->
+			</div>
 
 			<?php
-			// Numbered pagination.
 			the_posts_pagination(
 				array(
 					'mid_size'           => 2,
@@ -78,14 +120,37 @@ get_header();
 				)
 			);
 			?>
-
 		<?php else : ?>
 			<div class="no-posts">
 				<h2><?php esc_html_e( 'Nothing Found', 'minimalcode' ); ?></h2>
 				<p><?php esc_html_e( "It seems we can't find what you're looking for.", 'minimalcode' ); ?></p>
 			</div>
 		<?php endif; ?>
-	</div>
+	</main>
+
+	<aside>
+		<div class="aside-block">
+			<h4 class="aside-h"><?php esc_html_e( 'Filed Under', 'minimalcode' ); ?></h4>
+			<div class="tag-cloud">
+				<?php foreach ( get_tags( array( 'number' => 18, 'orderby' => 'count', 'order' => 'DESC' ) ) as $tag ) : ?>
+					<a class="tag size-<?php echo esc_attr( min( 3, max( 1, (int) $tag->count ) ) ); ?>" href="<?php echo esc_url( get_tag_link( $tag ) ); ?>"><?php echo esc_html( $tag->name ); ?></a>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<div class="aside-block">
+			<div class="signal">
+				<p><strong><?php esc_html_e( 'The notebook is the product.', 'minimalcode' ); ?></strong></p>
+				<p><?php esc_html_e( 'Where I work in public: half-finished thoughts, post-mortems, and the occasional autonomous post.', 'minimalcode' ); ?></p>
+				<p><a href="<?php echo esc_url( get_feed_link() ); ?>">subscribe.rss</a> · <a href="<?php echo esc_url( home_url( '/' ) ); ?>">@drunk.support</a></p>
+			</div>
+		</div>
+		<div class="aside-block">
+			<div class="stamp">
+				BUILT IN<span class="big">PUBLIC</span>
+				since 2009
+			</div>
+		</div>
+	</aside>
 </div>
 
 <?php

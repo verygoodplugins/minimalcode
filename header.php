@@ -17,65 +17,75 @@
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
-<header class="site-header">
-    <div class="container">
-        <div class="header-content">
-            <div class="site-branding">
-                <h1 class="site-title">
-                    <a href="<?php echo esc_url(home_url('/')); ?>" rel="home">
-                        <?php bloginfo('name'); ?>
-                    </a>
-                </h1>
-                <?php
-                $tagline = get_theme_mod('minimalcode_tagline', get_bloginfo('description'));
-                if ($tagline) :
-                ?>
-                    <p class="site-description"><?php echo esc_html($tagline); ?></p>
-                <?php endif; ?>
-            </div>
+<div class="ticker" aria-label="<?php esc_attr_e( 'Site status ticker', 'minimalcode' ); ?>">
+	<div class="ticker-track">
+		<?php
+		$ticker_items = array(
+			'automem recall pipeline live',
+			'autohub orchestration notes',
+			'wp fusion still pays the bills',
+			'autojack last pass: recent',
+			'skills indexed locally',
+			'debug notes from production',
+		);
 
-            <nav class="main-navigation">
-                <?php
-                wp_nav_menu(array(
-                    'theme_location' => 'primary',
-                    'menu_class' => 'nav-menu',
-                    'container' => false,
-                    'fallback_cb' => false,
-                ));
-                ?>
-                <button class="search-trigger" aria-label="Search (⌘K)" title="Search (⌘K)">
-                    <?php minimalcode_the_icon('search', 20); ?>
-                    <span class="search-trigger-label">Search&hellip;</span>
-                    <span class="search-kbd">⌘K</span>
-                </button>
-                <button class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
-                    <span class="sun-icon"><?php minimalcode_the_icon('sun', 20); ?></span>
-                    <span class="moon-icon"><?php minimalcode_the_icon('moon', 20); ?></span>
-                </button>
-                <?php
-                $header_social = minimalcode_social_links();
-                if ( array_filter( array(
-                    'github'   => $header_social['github'],
-                    'twitter'  => $header_social['twitter'],
-                    'linkedin' => $header_social['linkedin'],
-                ) ) ) :
-                ?>
-                <ul class="header-social" aria-label="Social links">
-                    <?php if ( $header_social['github'] ) : ?>
-                        <li><a class="social-squircle" href="<?php echo esc_url( $header_social['github'] ); ?>" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"><?php minimalcode_the_icon('github', 20); ?></a></li>
-                    <?php endif; ?>
-                    <?php if ( $header_social['twitter'] ) : ?>
-                        <li><a class="social-squircle" href="<?php echo esc_url( $header_social['twitter'] ); ?>" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" title="X (Twitter)"><?php minimalcode_the_icon('twitter', 20); ?></a></li>
-                    <?php endif; ?>
-                    <?php if ( $header_social['linkedin'] ) : ?>
-                        <li><a class="social-squircle" href="<?php echo esc_url( $header_social['linkedin'] ); ?>" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><?php minimalcode_the_icon('linkedin', 20); ?></a></li>
-                    <?php endif; ?>
-                </ul>
-                <?php endif; ?>
-            </nav>
-        </div>
-    </div>
+		foreach ( array_merge( $ticker_items, $ticker_items ) as $ticker_item ) :
+			?>
+			<span><?php echo esc_html( $ticker_item ); ?><span class="dot">&bull;</span></span>
+		<?php endforeach; ?>
+	</div>
+</div>
+
+<header class="masthead wrap">
+	<div class="mast-row">
+		<div class="brand">
+			<a class="brand-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
+				<?php bloginfo( 'name' ); ?>
+			</a>
+			<div class="brand-meta">
+				VOL.04 / <span class="iss">ISS.27</span><br>
+				EST. 2009 · MIA / LIS<br>
+				jack arturo · vgp
+			</div>
+		</div>
+
+		<div class="mast-tag serif">
+			&quot;Just another <span class="pull">Wordprussite</span>.&quot; — a working notebook for memory-bearing agents, half-built systems, and bugs we learned to live with.
+		</div>
+
+		<div class="mast-utility">
+			<button class="util-btn search-trigger" aria-label="Search (⌘K)" title="Search (⌘K)">
+				<span class="search-kbd">⌘K</span>
+				<span class="search-trigger-label"><?php esc_html_e( 'Search', 'minimalcode' ); ?></span>
+			</button>
+			<button class="util-btn theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+				<span class="sun-icon"><?php esc_html_e( 'Light', 'minimalcode' ); ?></span>
+				<span class="moon-icon"><?php esc_html_e( 'Dark', 'minimalcode' ); ?></span>
+			</button>
+			<a class="util-btn hot" href="<?php echo esc_url( get_feed_link() ); ?>"><?php esc_html_e( 'RSS', 'minimalcode' ); ?></a>
+		</div>
+	</div>
 </header>
+
+<nav class="nav wrap" aria-label="<?php esc_attr_e( 'Primary navigation', 'minimalcode' ); ?>">
+	<a class="nav-item <?php echo is_home() ? 'active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+		<span class="nav-num">01</span> <?php esc_html_e( 'Log', 'minimalcode' ); ?>
+	</a>
+	<a class="nav-item <?php echo is_post_type_archive( 'project' ) ? 'active' : ''; ?>" href="<?php echo esc_url( get_post_type_archive_link( 'project' ) ); ?>">
+		<span class="nav-num">02</span> <?php esc_html_e( 'Projects', 'minimalcode' ); ?>
+	</a>
+	<a class="nav-item" href="<?php echo esc_url( home_url( '/dev-pulse/' ) ); ?>">
+		<span class="nav-num">03</span> <?php esc_html_e( 'Dev Pulse', 'minimalcode' ); ?>
+	</a>
+	<a class="nav-item" href="<?php echo esc_url( home_url( '/about/' ) ); ?>">
+		<span class="nav-num">04</span> <?php esc_html_e( 'About', 'minimalcode' ); ?>
+	</a>
+	<a class="nav-item" href="<?php echo esc_url( home_url( '/colophon/' ) ); ?>">
+		<span class="nav-num">05</span> <?php esc_html_e( 'Colophon', 'minimalcode' ); ?>
+	</a>
+	<span class="nav-spacer" aria-hidden="true"></span>
+	<span class="nav-status"><span class="live-dot"></span><?php esc_html_e( 'Live', 'minimalcode' ); ?></span>
+</nav>
 
 <main id="main" class="site-main">
 

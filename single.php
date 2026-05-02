@@ -17,49 +17,56 @@ get_header();
 		$is_autojack = (bool) get_post_meta( get_the_ID(), '_minimalcode_autojack', true )
 			|| ( 2 === (int) get_the_author_meta( 'ID' ) );
 	?>
-		<div class="single-post-layout">
-			<!-- Left: Meta sidebar -->
-			<aside class="post-meta-sidebar">
-				<div class="meta-sticky">
-					<time class="published" datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>">
-						<?php echo esc_html( get_the_date( 'M j, Y' ) ); ?>
-					</time>
-					<span class="reading-time"><?php echo esc_html( minimalcode_reading_time() ); ?></span>
-					<?php if ( $is_autojack ) : ?>
-						<span class="author-badge author-autojack">AutoJack</span>
-					<?php endif; ?>
-				</div>
+		<div class="single wrap">
+			<aside class="post-meta-rail">
+				<a class="post-back" href="<?php echo esc_url( home_url( '/' ) ); ?>">← back to log</a>
+				<div class="row"><span class="k">hash</span><span class="v"><?php echo esc_html( substr( md5( get_post_field( 'post_name', get_the_ID() ) ), 0, 6 ) ); ?></span></div>
+				<div class="row"><span class="k">filed</span><span class="v"><?php echo esc_html( strtoupper( get_the_date( 'M d' ) ) ); ?></span></div>
+				<div class="row"><span class="k">cat</span><span class="v"><?php echo esc_html( minimalcode_primary_category_name() ); ?></span></div>
+				<div class="row"><span class="k">read</span><span class="v"><?php echo esc_html( minimalcode_reading_time() ); ?></span></div>
+				<div class="row"><span class="k">words</span><span class="v">~<?php echo esc_html( str_word_count( wp_strip_all_tags( get_the_content() ) ) ); ?></span></div>
+				<div class="row"><span class="k">author</span><span class="v"><?php echo $is_autojack ? 'AutoJack' : esc_html( get_the_author() ); ?></span></div>
+				<div class="row"><span class="k">status</span><span class="v live-status">&bull; live</span></div>
 			</aside>
 
-			<!-- Center: Main content -->
 			<article id="post-<?php the_ID(); ?>" <?php post_class( 'single-post' ); ?>>
-				<header class="entry-header">
-					<h1 class="entry-title"><?php the_title(); ?></h1>
-
-					<?php if ( has_category() ) : ?>
-						<div class="entry-categories">
-							<?php the_category( ', ' ); ?>
-						</div>
+				<div class="post-kicker">
+					<span class="tag hot-tag"><?php echo esc_html( minimalcode_primary_category_name() ); ?></span>
+					<?php if ( $is_autojack ) : ?>
+						<span class="tag aj">written by autojack</span>
 					<?php endif; ?>
-				</header>
+				</div>
+				<h1 class="post-headline serif"><?php the_title(); ?></h1>
+				<?php if ( has_excerpt() ) : ?>
+					<p class="post-deck"><?php echo esc_html( get_the_excerpt() ); ?></p>
+				<?php endif; ?>
+				<div class="post-byline">
+					<span><?php echo esc_html( get_the_date( 'F j, Y' ) ); ?></span>
+					<span class="sep">·</span>
+					<span><?php echo esc_html( minimalcode_reading_time() ); ?></span>
+					<span class="sep">·</span>
+					<span>by <?php echo $is_autojack ? 'AutoJack' : esc_html( get_the_author() ); ?></span>
+					<span class="sep">·</span>
+					<span>commit <?php echo esc_html( substr( md5( get_post_field( 'post_name', get_the_ID() ) ), 0, 6 ) ); ?></span>
+				</div>
 
 				<?php if ( $is_autojack ) : ?>
-					<div class="autojack-disclaimer">
-						<div class="disclaimer-icon">🤖</div>
-						<div class="disclaimer-content">
-							<strong>Written by AutoJack</strong>
-							<p>This post was autonomously written by AutoJack, an AI agent integrated into our development workflow. AutoJack monitors our work on WP Fusion and related projects, identifies topics worth sharing, and writes posts based on real development activity. <a href="https://autojack.ai" target="_blank" rel="noopener">Learn more →</a></p>
+					<div class="aj-banner">
+						<div class="robot">🤖</div>
+						<div>
+							<strong>autonomous post</strong>
+							Written without human pre-review. AutoJack monitors our work and writes posts when it identifies something worth sharing. Tone, framing, edits — all model.
 						</div>
 					</div>
 				<?php endif; ?>
 
 				<?php if ( has_post_thumbnail() ) : ?>
-					<div class="entry-featured-image">
+					<figure class="entry-featured-image">
 						<?php the_post_thumbnail( 'large' ); ?>
-					</div>
+					</figure>
 				<?php endif; ?>
 
-				<div class="entry-content">
+				<div class="post-body dropcap entry-content">
 					<?php
 					the_content();
 
@@ -73,22 +80,30 @@ get_header();
 				</div>
 
 				<?php if ( has_tag() ) : ?>
-					<footer class="entry-footer">
+					<footer class="filed-under">
+						<div class="filed-label">// filed under</div>
 						<div class="post-tags">
 							<?php the_tags( '', ' ', '' ); ?>
 						</div>
 					</footer>
 				<?php endif; ?>
+
+				<div class="about-author">
+					<div class="about-avatar <?php echo $is_autojack ? 'aj' : ''; ?>"><?php echo $is_autojack ? 'AJ' : 'JA'; ?></div>
+					<div class="about-meta">
+						<h4 class="name"><?php echo $is_autojack ? 'AutoJack' : 'jack arturo'; ?> <span class="role"><?php echo $is_autojack ? 'autonomous agent · vgp' : 'creator · drunk.support'; ?></span></h4>
+						<p class="bio"><?php echo $is_autojack ? esc_html__( 'An AI agent embedded in the development workflow. Drafts are committed to the repo, not polished into marketing copy.', 'minimalcode' ) : esc_html__( 'Founder of Very Good Plugins. Writes here when the post is too long for a commit message but too specific for a tweet.', 'minimalcode' ); ?></p>
+					</div>
+				</div>
 			</article>
 
-			<!-- Right: Table of contents -->
-			<aside class="post-toc-sidebar">
-				<nav class="toc-sticky" aria-label="Table of contents">
-					<h4 class="toc-title">Contents</h4>
-					<ul class="toc-list" id="toc-list">
-						<!-- Generated by JavaScript -->
-					</ul>
-				</nav>
+			<aside class="toc-rail">
+				<div class="h">Contents</div>
+				<ol id="toc-list">
+					<li>article</li>
+					<li>filed under</li>
+					<li class="muted">related posts</li>
+				</ol>
 			</aside>
 		</div>
 
