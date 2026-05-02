@@ -236,3 +236,40 @@ function minimalcode_body_classes($classes) {
 }
 add_filter('body_class', 'minimalcode_body_classes');
 
+/**
+ * Virtual templated pages — /dev-pulse/ and /colophon/.
+ *
+ * Avoids needing a corresponding WP page in wp-admin; the templates live in
+ * version control. Visit wp-admin/options-permalink.php once after deploy
+ * (just hit Save) to flush rewrite rules.
+ */
+add_action('init', function () {
+    add_rewrite_rule('^dev-pulse/?$', 'index.php?minimalcode_virtual=dev-pulse', 'top');
+    add_rewrite_rule('^colophon/?$',  'index.php?minimalcode_virtual=colophon',  'top');
+});
+
+add_filter('query_vars', function ($vars) {
+    $vars[] = 'minimalcode_virtual';
+    return $vars;
+});
+
+add_filter('template_include', function ($template) {
+    $virtual = get_query_var('minimalcode_virtual');
+
+    if ('dev-pulse' === $virtual) {
+        $candidate = get_template_directory() . '/page-dev-pulse.php';
+        if (file_exists($candidate)) {
+            return $candidate;
+        }
+    }
+
+    if ('colophon' === $virtual) {
+        $candidate = get_template_directory() . '/page-colophon.php';
+        if (file_exists($candidate)) {
+            return $candidate;
+        }
+    }
+
+    return $template;
+});
+

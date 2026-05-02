@@ -67,20 +67,26 @@
 	</div>
 </header>
 
+<?php
+$minimalcode_virtual = get_query_var( 'minimalcode_virtual' );
+$is_log_active       = is_home() && empty( $minimalcode_virtual );
+$is_dev_pulse_active = ( 'dev-pulse' === $minimalcode_virtual );
+$is_colophon_active  = ( 'colophon' === $minimalcode_virtual );
+?>
 <nav class="nav wrap" aria-label="<?php esc_attr_e( 'Primary navigation', 'minimalcode' ); ?>">
-	<a class="nav-item <?php echo is_home() ? 'active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+	<a class="nav-item <?php echo $is_log_active ? 'active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>">
 		<span class="nav-num">01</span> <?php esc_html_e( 'Log', 'minimalcode' ); ?>
 	</a>
-	<a class="nav-item <?php echo is_post_type_archive( 'project' ) ? 'active' : ''; ?>" href="<?php echo esc_url( get_post_type_archive_link( 'project' ) ); ?>">
+	<a class="nav-item <?php echo is_post_type_archive( 'projects' ) ? 'active' : ''; ?>" href="<?php echo esc_url( get_post_type_archive_link( 'projects' ) ); ?>">
 		<span class="nav-num">02</span> <?php esc_html_e( 'Projects', 'minimalcode' ); ?>
 	</a>
-	<a class="nav-item" href="<?php echo esc_url( home_url( '/dev-pulse/' ) ); ?>">
+	<a class="nav-item <?php echo $is_dev_pulse_active ? 'active' : ''; ?>" href="<?php echo esc_url( home_url( '/dev-pulse/' ) ); ?>">
 		<span class="nav-num">03</span> <?php esc_html_e( 'Dev Pulse', 'minimalcode' ); ?>
 	</a>
-	<a class="nav-item" href="<?php echo esc_url( home_url( '/about/' ) ); ?>">
+	<a class="nav-item <?php echo is_page( 'about' ) ? 'active' : ''; ?>" href="<?php echo esc_url( home_url( '/about/' ) ); ?>">
 		<span class="nav-num">04</span> <?php esc_html_e( 'About', 'minimalcode' ); ?>
 	</a>
-	<a class="nav-item" href="<?php echo esc_url( home_url( '/colophon/' ) ); ?>">
+	<a class="nav-item <?php echo $is_colophon_active ? 'active' : ''; ?>" href="<?php echo esc_url( home_url( '/colophon/' ) ); ?>">
 		<span class="nav-num">05</span> <?php esc_html_e( 'Colophon', 'minimalcode' ); ?>
 	</a>
 	<span class="nav-spacer" aria-hidden="true"></span>

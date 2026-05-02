@@ -6,12 +6,9 @@
  */
 
 get_header();
-?>
 
-<div class="container">
-	<?php
-	while ( have_posts() ) :
-		the_post();
+while ( have_posts() ) :
+	the_post();
 		// Source of truth is the explicit post-meta flag set in the Authorship meta box.
 		// Legacy posts authored by user ID 2 are treated as AutoJack as a one-time fallback.
 		$is_autojack = (bool) get_post_meta( get_the_ID(), '_minimalcode_autojack', true )
@@ -123,7 +120,6 @@ get_header();
 		?>
 
 	<?php endwhile; ?>
-</div>
 
 <?php
 get_footer();
