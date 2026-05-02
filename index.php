@@ -121,9 +121,9 @@ get_header();
 			);
 			?>
 		<?php else : ?>
-			<div class="no-posts">
-				<h2><?php esc_html_e( 'Nothing Found', 'minimalcode' ); ?></h2>
-				<p><?php esc_html_e( "It seems we can't find what you're looking for.", 'minimalcode' ); ?></p>
+			<div class="no-posts-empty">
+				<h2 class="serif"><?php esc_html_e( 'Nothing yet', 'minimalcode' ); ?></h2>
+				<p><?php esc_html_e( 'The notebook is empty for now. Check back soon.', 'minimalcode' ); ?></p>
 			</div>
 		<?php endif; ?>
 	</main>
