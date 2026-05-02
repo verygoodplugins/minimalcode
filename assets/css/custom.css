@@ -444,7 +444,11 @@ body {
    so admin bar, customizer, and Gutenberg editor links keep the global blue. */
 .post-body a,
 .entry-content a,
-.archive-deck a {
+.archive-deck a,
+.about-author a,
+.logged-in-as a,
+.np-comment-form .comment-notes a,
+.np-comment-list .comment-content a {
   color: var(--ink);
   text-decoration: none;
   border-bottom: 1.5px solid var(--hot);
@@ -453,7 +457,11 @@ body {
 }
 .post-body a:hover,
 .entry-content a:hover,
-.archive-deck a:hover {
+.archive-deck a:hover,
+.about-author a:hover,
+.logged-in-as a:hover,
+.np-comment-form .comment-notes a:hover,
+.np-comment-list .comment-content a:hover {
   color: var(--bleed);
   border-bottom-color: var(--bleed);
 }
@@ -669,6 +677,8 @@ pre code {
 .about-author::before { content: "// ABOUT THE AUTHOR"; position: absolute; top: -10px; left: 18px; background: var(--paper); padding: 0 8px; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.14em; color: var(--bleed); font-weight: 600; }
 .about-avatar { width: 88px; height: 88px; border: 1.5px solid var(--ink); background: var(--paper); display: flex; align-items: center; justify-content: center; font-family: "Fraunces", serif; font-weight: 900; font-size: 32px; color: var(--ink); }
 .about-avatar.aj { background: var(--ink); color: var(--hot); border-color: var(--hot); }
+.about-avatar-img { width: 88px; height: 88px; border: 1.5px solid var(--ink); background: var(--paper); object-fit: cover; display: block; }
+.about-avatar-img.aj { border-color: var(--hot); }
 .about-meta .name { font-family: "Fraunces", serif; font-weight: 800; font-size: 22px; color: var(--ink); margin: 0 0 2px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .about-meta .role { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bleed); font-weight: 600; }
 .about-meta .bio { font-family: "Inter", sans-serif; font-size: 14px; line-height: 1.55; color: var(--ink-soft); margin: 8px 0 0; max-width: 60ch; }
