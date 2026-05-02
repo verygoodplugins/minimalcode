@@ -14,7 +14,7 @@ get_header();
 			<h4 class="rail-h"><?php esc_html_e( 'Search', 'minimalcode' ); ?></h4>
 			<div class="rail-row"><span class="k">query</span><span class="v"><?php echo esc_html( get_search_query() ); ?></span></div>
 			<div class="rail-row"><span class="k">found</span><span class="v"><?php echo esc_html( $GLOBALS['wp_query']->found_posts ); ?></span></div>
-			<div class="rail-row"><span class="k">scope</span><span class="v">posts · pages</span></div>
+			<div class="rail-row"><span class="k">scope</span><span class="v">posts · pages · projects</span></div>
 		</div>
 
 		<div class="rail-block">

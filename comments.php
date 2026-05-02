@@ -16,8 +16,8 @@ if ( post_password_required() ) {
 			<span class="np-comments-label">// thread</span>
 			<h2 class="np-comments-title serif">
 				<?php
-				$comment_count = get_comments_number();
-				if ( '1' === $comment_count ) {
+				$comment_count = (int) get_comments_number();
+				if ( 1 === $comment_count ) {
 					printf(
 						/* translators: %s: post title. */
 						esc_html__( 'one note on %s', 'minimalcode' ),

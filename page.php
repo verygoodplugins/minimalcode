@@ -60,9 +60,7 @@ get_header();
 
 	<aside class="toc-rail">
 		<div class="h">Contents</div>
-		<ol id="toc-list">
-			<li>page</li>
-		</ol>
+		<ol id="toc-list"></ol>
 	</aside>
 </div>
 

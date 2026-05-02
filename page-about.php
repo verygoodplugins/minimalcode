@@ -77,9 +77,9 @@ $social_links = minimalcode_social_links();
 
 	<aside class="toc-rail about-toc">
 		<div class="h">Elsewhere</div>
-		<ol id="toc-list">
+		<ol class="elsewhere-list">
 			<li>about</li>
-			<li><a href="<?php echo esc_url( get_post_type_archive_link( 'project' ) ); ?>">projects</a></li>
+			<li><a href="<?php echo esc_url( get_post_type_archive_link( 'projects' ) ); ?>">projects</a></li>
 			<li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">log</a></li>
 			<li class="muted"><a href="<?php echo esc_url( get_feed_link() ); ?>">subscribe.rss</a></li>
 		</ol>
