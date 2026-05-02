@@ -149,10 +149,15 @@
     }
   };
 
-  // Search Modal (⌘K)
+  // Search Modal (⌘K) — live results via WP REST /wp/v2/search.
   const SearchModal = {
     modal: null,
     input: null,
+    resultsEl: null,
+    results: [],
+    activeIndex: -1,
+    debounceTimer: null,
+    requestSeq: 0,
 
     init() {
       this.createModal();
@@ -164,25 +169,35 @@
       modal.className = 'search-modal';
       modal.innerHTML = `
         <div class="search-modal-overlay"></div>
-        <div class="search-modal-content">
+        <div class="search-modal-content" role="dialog" aria-modal="true" aria-label="Search">
           <div class="search-modal-header">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" class="search-modal-input" placeholder="Search posts..." autocomplete="off">
+            <input type="text" class="search-modal-input" placeholder="Search posts…" autocomplete="off" spellcheck="false" aria-controls="search-modal-results" aria-autocomplete="list">
             <kbd class="search-modal-kbd">ESC</kbd>
+          </div>
+          <ul id="search-modal-results" class="search-modal-results" role="listbox" aria-label="Search results"></ul>
+          <div class="search-modal-hints">
+            <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+            <span><kbd>⏎</kbd> open</span>
+            <span><kbd>esc</kbd> close</span>
           </div>
         </div>
       `;
       document.body.appendChild(modal);
       this.modal = modal;
       this.input = modal.querySelector('.search-modal-input');
+      this.resultsEl = modal.querySelector('.search-modal-results');
     },
 
     open() {
       this.modal.classList.add('active');
       this.input.value = '';
+      this.results = [];
+      this.activeIndex = -1;
+      this.renderResults('');
       this.input.focus();
       document.body.style.overflow = 'hidden';
     },
@@ -192,10 +207,119 @@
       document.body.style.overflow = '';
     },
 
-    submit() {
+    fallbackSubmit() {
       const query = this.input.value.trim();
       if (query) {
         window.location.href = `/?s=${encodeURIComponent(query)}`;
+      }
+    },
+
+    async fetchResults(query) {
+      if (!query) {
+        this.results = [];
+        this.activeIndex = -1;
+        this.renderResults(query);
+        return;
+      }
+      // Prefer wp.apiFetch (handles nonce). Fall back to plain fetch.
+      const path = `/wp/v2/search?search=${encodeURIComponent(query)}&per_page=8&type=post&_embed=1`;
+      const seq = ++this.requestSeq;
+      try {
+        let data;
+        if (window.wp && window.wp.apiFetch) {
+          data = await window.wp.apiFetch({ path });
+        } else {
+          const res = await fetch(`/wp-json${path}`, { credentials: 'same-origin' });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          data = await res.json();
+        }
+        // Drop stale responses if a newer query already fired.
+        if (seq !== this.requestSeq) return;
+        this.results = Array.isArray(data) ? data : [];
+        this.activeIndex = this.results.length ? 0 : -1;
+        this.renderResults(query);
+      } catch (err) {
+        if (seq !== this.requestSeq) return;
+        this.results = [];
+        this.activeIndex = -1;
+        this.renderError(err);
+      }
+    },
+
+    renderResults(query) {
+      if (!this.resultsEl) return;
+
+      if (!query) {
+        this.resultsEl.innerHTML = `<li class="search-modal-empty">Type to search posts.</li>`;
+        return;
+      }
+
+      if (!this.results.length) {
+        this.resultsEl.innerHTML = `<li class="search-modal-empty">No results for &ldquo;${this.escape(query)}&rdquo;.</li>`;
+        return;
+      }
+
+      const html = this.results.map((r, i) => {
+        const title = this.highlight(r.title || '', query);
+        const subtitle = this.escape(r.subtype || r.type || '');
+        const selected = i === this.activeIndex ? 'true' : 'false';
+        return `<li class="search-modal-result" role="option" aria-selected="${selected}" data-index="${i}" data-url="${this.escape(r.url || '#')}">
+          <span class="search-modal-result-title">${title}</span>
+          <span class="search-modal-result-meta">${subtitle}</span>
+        </li>`;
+      }).join('');
+      this.resultsEl.innerHTML = html;
+    },
+
+    renderError(err) {
+      this.resultsEl.innerHTML = `<li class="search-modal-empty">Search unavailable. Press ⏎ to try a full-page search.</li>`;
+    },
+
+    highlight(text, query) {
+      const safe = this.escape(text);
+      if (!query) return safe;
+      // Escape regex special chars in the query, then wrap matches in <mark>.
+      const pattern = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      try {
+        return safe.replace(new RegExp(`(${pattern})`, 'ig'), '<mark>$1</mark>');
+      } catch (_) {
+        return safe;
+      }
+    },
+
+    escape(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    },
+
+    setActive(newIndex) {
+      if (!this.results.length) return;
+      const max = this.results.length - 1;
+      if (newIndex < 0) newIndex = max;
+      if (newIndex > max) newIndex = 0;
+      this.activeIndex = newIndex;
+      const items = this.resultsEl.querySelectorAll('.search-modal-result');
+      items.forEach((el, i) => {
+        const sel = i === this.activeIndex;
+        el.setAttribute('aria-selected', sel ? 'true' : 'false');
+        if (sel) el.scrollIntoView({ block: 'nearest' });
+      });
+    },
+
+    openActive() {
+      if (this.activeIndex < 0) {
+        this.fallbackSubmit();
+        return;
+      }
+      const result = this.results[this.activeIndex];
+      if (result && result.url) {
+        window.location.href = result.url;
+      } else {
+        this.fallbackSubmit();
       }
     },
 
@@ -215,12 +339,44 @@
         }
       });
 
-      // Enter to submit
+      // Debounced live query.
+      this.input.addEventListener('input', () => {
+        const query = this.input.value.trim();
+        clearTimeout(this.debounceTimer);
+        this.debounceTimer = setTimeout(() => this.fetchResults(query), 150);
+      });
+
+      // Keyboard navigation in input.
       this.input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          this.submit();
+          this.openActive();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          this.setActive(this.activeIndex + 1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          this.setActive(this.activeIndex - 1);
         }
+      });
+
+      // Click on a result.
+      this.resultsEl.addEventListener('click', (e) => {
+        const li = e.target.closest('.search-modal-result');
+        if (!li) return;
+        const idx = parseInt(li.dataset.index, 10);
+        if (!isNaN(idx)) {
+          this.activeIndex = idx;
+          this.openActive();
+        }
+      });
+
+      // Mouse hover updates active row so Enter feels right.
+      this.resultsEl.addEventListener('mousemove', (e) => {
+        const li = e.target.closest('.search-modal-result');
+        if (!li) return;
+        const idx = parseInt(li.dataset.index, 10);
+        if (!isNaN(idx) && idx !== this.activeIndex) this.setActive(idx);
       });
 
       // Click overlay to close

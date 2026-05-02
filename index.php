@@ -33,7 +33,8 @@ get_header();
 						<div class="month-group">
 					<?php endif; ?>
 
-					<article id="post-<?php the_ID(); ?>" <?php post_class( 'post-item-minimal' ); ?>>
+					<?php $is_autojack = (bool) get_post_meta( get_the_ID(), '_minimalcode_autojack', true ); ?>
+					<article id="post-<?php the_ID(); ?>" <?php post_class( $is_autojack ? 'post-item-minimal is-autojack' : 'post-item-minimal' ); ?>>
 						<a href="<?php the_permalink(); ?>" class="post-link">
 							<span class="post-title"><?php the_title(); ?></span>
 							<span class="post-meta">
@@ -55,6 +56,9 @@ get_header();
 										echo esc_html( implode( ', ', array_slice( $tag_names, 0, 3 ) ) );
 										?>
 									</span>
+								<?php endif; ?>
+								<?php if ( $is_autojack ) : ?>
+									<span class="autojack-pill" aria-label="Written by AutoJack"><span class="autojack-pill-glyph" aria-hidden="true">🤖</span> AutoJack</span>
 								<?php endif; ?>
 							</span>
 						</a>

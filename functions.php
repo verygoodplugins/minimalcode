@@ -12,6 +12,9 @@ if (!defined('ABSPATH')) {
 // Include custom post types.
 require_once get_template_directory() . '/inc/post-types.php';
 
+// Inline SVG icon helper (minimalcode_icon).
+require_once get_template_directory() . '/inc/icons.php';
+
 /**
  * Theme setup
  */
@@ -80,8 +83,9 @@ function minimalcode_scripts() {
         );
     }
     
-    // Theme toggle script
-    wp_enqueue_script('minimalcode-theme', get_template_directory_uri() . '/assets/js/theme.js', array(), filemtime(get_template_directory() . '/assets/js/theme.js'), true);
+    // Theme behavior + live ⌘K search.
+    // Depends on wp-api-fetch so the search modal can hit /wp/v2/search.
+    wp_enqueue_script('minimalcode-theme', get_template_directory_uri() . '/assets/js/theme.js', array('wp-api-fetch'), filemtime(get_template_directory() . '/assets/js/theme.js'), true);
     
     // Comment reply script
     if (is_singular() && comments_open() && get_option('thread_comments')) {

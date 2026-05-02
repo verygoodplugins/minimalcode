@@ -83,6 +83,21 @@ function minimalcode_register_post_types() {
 			},
 		)
 	);
+
+	// AutoJack — boolean flag marking AI-authored posts.
+	register_post_meta(
+		'post',
+		'_minimalcode_autojack',
+		array(
+			'type'              => 'boolean',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'rest_sanitize_boolean',
+			'auth_callback'     => function() {
+				return current_user_can( 'edit_posts' );
+			},
+		)
+	);
 }
 
 add_action( 'add_meta_boxes', 'minimalcode_project_meta_boxes' );
@@ -99,6 +114,60 @@ function minimalcode_project_meta_boxes() {
 		'normal',
 		'high'
 	);
+
+	add_meta_box(
+		'minimalcode_post_authorship',
+		__( 'Authorship', 'minimalcode' ),
+		'minimalcode_post_authorship_callback',
+		'post',
+		'side',
+		'default'
+	);
+}
+
+/**
+ * Render authorship meta box (AutoJack flag).
+ */
+function minimalcode_post_authorship_callback( $post ) {
+	wp_nonce_field( 'minimalcode_post_authorship', 'minimalcode_post_authorship_nonce' );
+	$is_autojack = (bool) get_post_meta( $post->ID, '_minimalcode_autojack', true );
+	?>
+	<p>
+		<label>
+			<input type="checkbox" name="minimalcode_autojack" value="1" <?php checked( $is_autojack ); ?>>
+			<?php esc_html_e( 'Written by AutoJack (AI agent)', 'minimalcode' ); ?>
+		</label>
+	</p>
+	<p class="description">
+		<?php esc_html_e( 'Flags this post as autonomously written. Renders the AutoJack pill on lists and the disclaimer card at the top of the post.', 'minimalcode' ); ?>
+	</p>
+	<?php
+}
+
+add_action( 'save_post_post', 'minimalcode_save_post_authorship' );
+
+/**
+ * Persist the AutoJack flag.
+ */
+function minimalcode_save_post_authorship( $post_id ) {
+	if ( ! isset( $_POST['minimalcode_post_authorship_nonce'] ) ) {
+		return;
+	}
+
+	if ( ! wp_verify_nonce( $_POST['minimalcode_post_authorship_nonce'], 'minimalcode_post_authorship' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	$flag = ! empty( $_POST['minimalcode_autojack'] );
+	update_post_meta( $post_id, '_minimalcode_autojack', $flag );
 }
 
 /**
