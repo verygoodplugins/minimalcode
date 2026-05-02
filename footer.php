@@ -7,7 +7,7 @@
                 <h4><?php esc_html_e( 'Notebook', 'minimalcode' ); ?></h4>
                 <ul>
                     <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">log</a></li>
-                    <li><a href="<?php echo esc_url( get_post_type_archive_link( 'project' ) ); ?>">projects</a></li>
+                    <li><a href="<?php echo esc_url( get_post_type_archive_link( 'projects' ) ); ?>">projects</a></li>
                     <li><a href="<?php echo esc_url( get_feed_link() ); ?>">rss</a></li>
                 </ul>
             </div>

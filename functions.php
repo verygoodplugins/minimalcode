@@ -236,3 +236,84 @@ function minimalcode_body_classes($classes) {
 }
 add_filter('body_class', 'minimalcode_body_classes');
 
+/**
+ * Virtual templated pages — /dev-pulse/ and /colophon/.
+ *
+ * Avoids needing a corresponding WP page in wp-admin; the templates live in
+ * version control. Rewrite rules are auto-flushed on theme switch.
+ */
+
+/**
+ * Map of virtual route slug → template file (relative to theme root).
+ */
+function minimalcode_virtual_routes() {
+    return array(
+        'dev-pulse' => 'page-dev-pulse.php',
+        'colophon'  => 'page-colophon.php',
+    );
+}
+
+function minimalcode_register_virtual_routes() {
+    foreach (array_keys(minimalcode_virtual_routes()) as $slug) {
+        add_rewrite_rule('^' . $slug . '/?$', 'index.php?minimalcode_virtual=' . $slug, 'top');
+    }
+}
+add_action('init', 'minimalcode_register_virtual_routes');
+
+add_filter('query_vars', function ($vars) {
+    $vars[] = 'minimalcode_virtual';
+    return $vars;
+});
+
+/**
+ * Auto-flush rewrite rules on theme switch so /dev-pulse/ and /colophon/
+ * resolve immediately — no manual options-permalink.php save required.
+ */
+function minimalcode_flush_virtual_rewrites_on_switch() {
+    minimalcode_register_virtual_routes();
+    flush_rewrite_rules();
+}
+add_action('after_switch_theme', 'minimalcode_flush_virtual_rewrites_on_switch');
+
+/**
+ * Short-circuit the default main query for virtual routes — the templates
+ * don't use the loop, so loading 10 posts per request is wasted DB work.
+ */
+add_action('pre_get_posts', function ($query) {
+    if (is_admin() || !$query->is_main_query()) {
+        return;
+    }
+    if ($query->get('minimalcode_virtual')) {
+        $query->set('posts_per_page', 0);
+        $query->set('no_found_rows', true);
+        $query->set('update_post_meta_cache', false);
+        $query->set('update_post_term_cache', false);
+    }
+});
+
+add_filter('template_include', function ($template) {
+    $virtual = get_query_var('minimalcode_virtual');
+    $routes  = minimalcode_virtual_routes();
+
+    if (!$virtual || !isset($routes[$virtual])) {
+        return $template;
+    }
+
+    // Canonical-URL guard: minimalcode_virtual is a public query var, so
+    // /?minimalcode_virtual=colophon would otherwise render the colophon
+    // template at the wrong URL (duplicate content). Reject anything that
+    // didn't come in via the rewrite rule and redirect to the canonical path.
+    $request_path = trim((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH), '/');
+    if ($request_path !== $virtual) {
+        wp_safe_redirect(home_url('/' . $virtual . '/'), 301);
+        exit;
+    }
+
+    $candidate = get_template_directory() . '/' . $routes[$virtual];
+    if (file_exists($candidate)) {
+        return $candidate;
+    }
+
+    return $template;
+});
+

@@ -440,6 +440,56 @@ body {
     radial-gradient(circle at 70% 80%, rgba(255,255,255,0.014) 0 1px, transparent 1px);
 }
 
+/* Prose links — ink with hot underline, bleed on hover. Scoped to article surfaces
+   so admin bar, customizer, and Gutenberg editor links keep the global blue. */
+.post-body a,
+.entry-content a,
+.archive-deck a,
+.about-author a,
+.logged-in-as a,
+.np-comment-form .comment-notes a,
+.np-comment-list .comment-content a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1.5px solid var(--hot);
+  padding-bottom: 1px;
+  transition: color 0.15s ease, border-bottom-color 0.15s ease;
+}
+.post-body a:hover,
+.entry-content a:hover,
+.archive-deck a:hover,
+.about-author a:hover,
+.logged-in-as a:hover,
+.np-comment-form .comment-notes a:hover,
+.np-comment-list .comment-content a:hover {
+  color: var(--bleed);
+  border-bottom-color: var(--bleed);
+}
+
+/* Inline code + fenced blocks: globalize newspaper palette so they match
+   inside and outside .post-body (overrides the GitHub greyscale in style.css). */
+code,
+pre {
+  background: var(--paper-dark);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  font-family: "JetBrains Mono", monospace;
+}
+code {
+  padding: 1px 6px;
+  font-size: 0.85em;
+}
+pre {
+  padding: var(--spacing-md);
+  border-width: 1.5px;
+}
+pre code {
+  background: none;
+  padding: 0;
+  border: 0;
+}
+
 .serif { font-family: "Fraunces", serif; font-feature-settings: "ss01"; }
 .wrap { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
 .site-main { padding: 0; min-height: 60vh; }
@@ -612,8 +662,6 @@ body {
 .post-body { font-family: "Fraunces", serif; font-size: 19px; line-height: 1.65; color: var(--ink); max-width: 64ch; }
 .post-body p { margin: 0 0 1.2em; text-wrap: pretty; }
 .post-body h2, .post-body h3 { font-family: "JetBrains Mono", monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--bleed); margin: 2em 0 0.8em; padding-top: 1em; border-top: 1px solid var(--rule); font-weight: 700; }
-.post-body code { background: var(--paper-dark); padding: 1px 6px; font-size: 0.85em; border: 1px solid var(--rule); }
-.post-body pre { background: var(--paper-dark); border: 1.5px solid var(--rule); border-radius: 0; }
 .post-body figure { margin: 2.2em -40px; font-family: "JetBrains Mono", monospace; }
 .post-body figure img, .post-body p > img, .entry-featured-image img { display: block; max-width: 100%; width: 100%; height: auto; border: 1.5px solid var(--rule); border-radius: 0; background: var(--paper-dark); }
 .filed-under { margin-top: 48px; padding-top: 24px; border-top: 2px solid var(--rule); }
@@ -629,6 +677,8 @@ body {
 .about-author::before { content: "// ABOUT THE AUTHOR"; position: absolute; top: -10px; left: 18px; background: var(--paper); padding: 0 8px; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.14em; color: var(--bleed); font-weight: 600; }
 .about-avatar { width: 88px; height: 88px; border: 1.5px solid var(--ink); background: var(--paper); display: flex; align-items: center; justify-content: center; font-family: "Fraunces", serif; font-weight: 900; font-size: 32px; color: var(--ink); }
 .about-avatar.aj { background: var(--ink); color: var(--hot); border-color: var(--hot); }
+.about-avatar-img { width: 88px; height: 88px; border: 1.5px solid var(--ink); background: var(--paper); object-fit: cover; display: block; }
+.about-avatar-img.aj { border-color: var(--hot); }
 .about-meta .name { font-family: "Fraunces", serif; font-weight: 800; font-size: 22px; color: var(--ink); margin: 0 0 2px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .about-meta .role { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bleed); font-weight: 600; }
 .about-meta .bio { font-family: "Inter", sans-serif; font-size: 14px; line-height: 1.55; color: var(--ink-soft); margin: 8px 0 0; max-width: 60ch; }
@@ -792,6 +842,27 @@ body {
 [data-theme="dark"] .pagination a,
 [data-theme="dark"] .posts-navigation a { background: var(--paper-dark); }
 [data-theme="dark"] .pagination .current { background: var(--hot); color: var(--paper); border-color: var(--hot); }
+
+/* Dark-mode contrast: cream --ink reads as washed-out cream-on-yellow-green
+   over --hot backgrounds. Swap text to dark --paper instead. */
+[data-theme="dark"] .hot-tag,
+[data-theme="dark"] .nav-item.active,
+[data-theme="dark"] .util-btn.hot,
+[data-theme="dark"] .np-comment-submit,
+[data-theme="dark"] .tag-cloud .tag:hover,
+[data-theme="dark"] .search-form-block .search-submit:hover {
+  color: var(--paper);
+}
+
+/* Hover-inversion buttons (.np-comment-submit, .post-navigation a) flip
+   bg=ink/color=hot, which in dark mode reads as yellow-green text on cream.
+   Pull the surface back to paper-dark so the hot text reads. */
+[data-theme="dark"] .np-comment-submit:hover,
+[data-theme="dark"] .post-navigation a:hover {
+  background: var(--paper-dark);
+  color: var(--hot);
+  border-color: var(--hot);
+}
 
 @media (max-width: 1100px) {
   .layout, .single.wrap { grid-template-columns: 180px 1fr; gap: 24px; }
