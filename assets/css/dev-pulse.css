@@ -1,0 +1,1411 @@
+/**
+ * Dev Pulse dashboard — interactive activity report styles.
+ *
+ * Ported from verygoodplugins/activity-report (index.html <style> block) and
+ * scoped under .dev-pulse-app so nothing leaks into the rest of the theme.
+ * Pulse design tokens (--bg, --surface, --text, --accent, --green, --red)
+ * are bridged to MinimalCode's existing tokens where they overlap, so dark
+ * mode flips automatically with the theme toggle. Pulse-specific accents
+ * (sage/lavender/coral/etc.) keep the original visual identity.
+ */
+
+.dev-pulse-app {
+  /* Bridge Pulse tokens to MinimalCode tokens — light mode defaults. */
+  --bg: var(--bg-primary);
+  --surface: var(--bg-secondary);
+  --surface-elevated: var(--bg-code);
+  --border: var(--border-color);
+  --text: var(--text-primary);
+  --text-secondary: var(--text-secondary, #6e7681);
+  --accent: var(--accent);
+  --accent-light: rgba(0, 102, 204, 0.12);
+  /* Pulse semantic colors — tuned for the dashboard, not the whole theme. */
+  --green: #6f9b7a;
+  --green-light: rgba(111, 155, 122, 0.18);
+  --red: #c97a6c;
+  --red-light: rgba(201, 122, 108, 0.18);
+  --purple: #8b7fb0;
+  --amber: #c9a064;
+  --cyan: #6fb1ad;
+  --pink: #c98ea2;
+  --sage: #6f9b7a;
+  --lavender: #8b7fb0;
+  --coral: #c97a6c;
+  --mint: #6fb1ad;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+[data-theme="dark"] .dev-pulse-app {
+  --accent-light: rgba(88, 166, 255, 0.18);
+  --green: #94c19f;
+  --green-light: rgba(148, 193, 159, 0.22);
+  --red: #e8a598;
+  --red-light: rgba(232, 165, 152, 0.22);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.35);
+  --shadow-md: 0 2px 6px rgba(0,0,0,0.4);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+    .dev-pulse-app *, .dev-pulse-app *::before, .dev-pulse-app *::after { box-sizing: border-box; }
+    
+    
+    
+    
+
+    
+
+    
+
+    /* Back Links */
+    
+
+    
+
+    
+
+    /* Top Bar (mirrors footer links so they're reachable without scrolling) */
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    /* Hero Section */
+    .dev-pulse-app .hero {
+      position: relative;
+      padding: 1.5rem 0 2rem;
+      margin-bottom: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .dev-pulse-app .hero-content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .dev-pulse-app .hero-left {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem 1.5rem;
+    }
+
+    .dev-pulse-app .hero-left .time-toggle {
+      margin-top: 0;
+    }
+
+    .dev-pulse-app .hero-left h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .dev-pulse-app .hero-tagline {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .dev-pulse-app .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.1); }
+    }
+
+    .dev-pulse-app .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 1.5rem;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+
+    .dev-pulse-app .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem 0.85rem;
+      text-align: center;
+      min-width: 0;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .dev-pulse-app .stat-card:hover {
+      border-color: var(--accent);
+    }
+
+    .dev-pulse-app .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      opacity: 0.7;
+    }
+
+    .dev-pulse-app .stat-card.repos::before { background: var(--sage); }
+    .dev-pulse-app .stat-card.commits::before { background: var(--lavender); }
+    .dev-pulse-app .stat-card.added::before { background: var(--green); }
+    .dev-pulse-app .stat-card.deleted::before { background: var(--red); }
+    .dev-pulse-app .stat-card.prs::before { background: var(--mint); }
+
+    /* Time Toggle */
+    .dev-pulse-app .time-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .dev-pulse-app .toggle-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .dev-pulse-app .toggle-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .dev-pulse-app .toggle-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .dev-pulse-app .stat-value {
+      font-size: 1.85rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .dev-pulse-app .stat-card.added .stat-value { color: var(--green); }
+    .dev-pulse-app .stat-card.deleted .stat-value { color: var(--red); }
+
+    .dev-pulse-app .stat-label {
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.25;
+      white-space: normal;
+    }
+
+    /* Weekly Rhythm */
+    .dev-pulse-app .section {
+      margin-bottom: 2.25rem;
+    }
+
+    .dev-pulse-app .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 1.1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dev-pulse-app .section-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      color: var(--text);
+    }
+
+    .dev-pulse-app .section-title-icon {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      filter: grayscale(0.2);
+    }
+
+    .dev-pulse-app .weekly-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1rem;
+    }
+
+    .dev-pulse-app .day-column {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.1rem 1rem;
+      transition: border-color 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dev-pulse-app .day-column:hover {
+      border-color: var(--accent);
+    }
+
+    .dev-pulse-app .day-column {
+      cursor: pointer;
+    }
+
+    .dev-pulse-app .day-column.today {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, var(--accent-light) 0%, var(--surface) 100%);
+    }
+
+    .dev-pulse-app .day-column.today::before {
+      content: 'TODAY';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--lavender);
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 0 0 0.5rem 0.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    .dev-pulse-app .day-column.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      box-shadow: var(--shadow-md);
+    }
+
+    .dev-pulse-app .day-column.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    /* View Transition Styles */
+    .dev-pulse-app .weekly-grid {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dev-pulse-app .weekly-grid.view-week {
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .dev-pulse-app .weekly-grid.view-month {
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+    }
+
+    .dev-pulse-app .weekly-grid.view-day {
+      grid-template-columns: 1fr;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .dev-pulse-app .day-column {
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.3s ease,
+                  padding 0.3s ease,
+                  min-height 0.3s ease;
+    }
+
+    .dev-pulse-app .day-column.fade-out {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    .dev-pulse-app .day-column.fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Week-by-week staggered reveal animation for month view */
+    @keyframes weekSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Staggered delays by week row (0 = oldest, 4 = current/most recent) */
+    .dev-pulse-app .weekly-grid.view-month .day-column.week-stagger[data-week="4"] { animation-delay: 0ms; }
+    .dev-pulse-app .weekly-grid.view-month .day-column.week-stagger[data-week="3"] { animation-delay: 300ms; }
+    .dev-pulse-app .weekly-grid.view-month .day-column.week-stagger[data-week="2"] { animation-delay: 600ms; }
+    .dev-pulse-app .weekly-grid.view-month .day-column.week-stagger[data-week="1"] { animation-delay: 900ms; }
+    .dev-pulse-app .weekly-grid.view-month .day-column.week-stagger[data-week="0"] { animation-delay: 1200ms; }
+
+    .dev-pulse-app .weekly-grid.view-month .day-column.week-stagger {
+      animation: weekSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      opacity: 0;
+    }
+
+    /* Month View - Compact Calendar Cards */
+    .dev-pulse-app .weekly-grid.view-month .day-column {
+      padding: 0.75rem;
+      min-height: auto;
+    }
+
+    .dev-pulse-app .weekly-grid.view-month .day-date {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .dev-pulse-app .weekly-grid.view-month .day-bars {
+      min-height: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .dev-pulse-app .weekly-grid.view-month .activity-bar {
+      height: 6px;
+      margin-bottom: 1px;
+    }
+
+    .dev-pulse-app .weekly-grid.view-month .activity-fill {
+      height: 100%;
+    }
+
+    .dev-pulse-app .weekly-grid.view-month .day-stats {
+      font-size: 0.6rem;
+      gap: 0.5rem;
+    }
+
+    .dev-pulse-app .weekly-grid.view-month .day-column.inactive-month {
+      opacity: 0.4;
+    }
+
+    /* Activity Intensity Dot for Month View */
+    .dev-pulse-app .activity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+
+    .dev-pulse-app .activity-dot.high { background: var(--green); }
+    .dev-pulse-app .activity-dot.medium { background: var(--amber); }
+    .dev-pulse-app .activity-dot.low { background: var(--border); }
+    .dev-pulse-app .activity-dot.none { background: transparent; border: 1px dashed var(--border); }
+
+    /* Day View - Hero Display */
+    .dev-pulse-app .day-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.75rem;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      animation: heroExpand 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes heroExpand {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .dev-pulse-app .day-hero .hero-date {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .dev-pulse-app .day-hero .hero-weekday {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1.5rem;
+    }
+
+    .dev-pulse-app .day-hero .hero-stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .dev-pulse-app .day-hero .hero-stat {
+      text-align: center;
+    }
+
+    .dev-pulse-app .day-hero .hero-stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .dev-pulse-app .day-hero .hero-stat-value.added { color: var(--green); }
+    .dev-pulse-app .day-hero .hero-stat-value.deleted { color: var(--red); }
+
+    .dev-pulse-app .day-hero .hero-stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Hourly Activity Chart */
+    .dev-pulse-app .hourly-chart {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .dev-pulse-app .hourly-chart-title {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .dev-pulse-app .hourly-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 80px;
+    }
+
+    .dev-pulse-app .hour-bar {
+      flex: 1;
+      background: var(--accent-light);
+      border-radius: 2px 2px 0 0;
+      min-height: 4px;
+      transition: height 0.3s ease, background 0.2s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .dev-pulse-app .hour-bar:hover {
+      background: var(--accent);
+    }
+
+    .dev-pulse-app .hour-bar:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text);
+      color: var(--bg);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      margin-bottom: 4px;
+    }
+
+    .dev-pulse-app .hour-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+      font-size: 0.6rem;
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Repos touched that day */
+    .dev-pulse-app .day-repos {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .dev-pulse-app .day-repos-title {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+      text-align: left;
+    }
+
+    .dev-pulse-app .day-repos-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-start;
+    }
+
+    .dev-pulse-app .day-repo-chip {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .dev-pulse-app .day-repo-chip:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .dev-pulse-app .day-name {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.25rem;
+    }
+
+    .dev-pulse-app .day-date {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 1rem;
+    }
+
+    .dev-pulse-app .day-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-height: 80px;
+    }
+
+    .dev-pulse-app .activity-bar {
+      height: 8px;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      background: var(--border);
+    }
+
+    .dev-pulse-app .activity-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1s ease-out;
+    }
+
+    .dev-pulse-app .day-stats {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+    }
+
+    .dev-pulse-app .day-stat {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .dev-pulse-app .day-stat.added { color: var(--green); }
+    .dev-pulse-app .day-stat.deleted { color: var(--red); }
+
+    /* Categories */
+    .dev-pulse-app .categories-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .dev-pulse-app .category-card {
+      padding: 1rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .dev-pulse-app .category-card:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .dev-pulse-app .category-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dev-pulse-app .category-icon {
+      font-size: 0.95rem;
+      opacity: 0.7;
+      line-height: 1;
+    }
+
+    .dev-pulse-app .category-name {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .dev-pulse-app .category-count {
+      margin-left: auto;
+      background: var(--surface-elevated);
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-secondary);
+    }
+
+    .dev-pulse-app .repo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .dev-pulse-app .repo-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      background: var(--surface-elevated);
+      border-radius: 3px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .dev-pulse-app .repo-item:hover {
+      background: var(--border);
+    }
+
+    .dev-pulse-app .repo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dev-pulse-app .repo-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .dev-pulse-app .repo-stats {
+      display: flex;
+      gap: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    .dev-pulse-app .repo-commits {
+      background: var(--accent-light);
+      color: #7A6B8A;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+      font-weight: 600;
+    }
+
+    .dev-pulse-app .repo-added { color: var(--green); }
+    .dev-pulse-app .repo-deleted { color: var(--red); }
+
+    /* Pull Requests */
+    .dev-pulse-app .pr-grid {
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .dev-pulse-app .pr-card {
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: background-color 0.2s ease;
+    }
+
+    .dev-pulse-app .pr-card:hover {
+      background: var(--surface-elevated);
+    }
+
+    .dev-pulse-app .pr-card-main {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1.25rem;
+      align-items: center;
+    }
+
+    .dev-pulse-app .pr-status {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      align-self: center;
+      font-size: 0;
+      flex-shrink: 0;
+    }
+
+    .dev-pulse-app .pr-status.open { background: var(--green); }
+    .dev-pulse-app .pr-status.merged { background: var(--lavender); }
+    .dev-pulse-app .pr-status.closed { background: var(--red); }
+
+    .dev-pulse-app .pr-title-text {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+      text-decoration: none;
+      display: block;
+    }
+
+    .dev-pulse-app .pr-title-text:hover {
+      color: var(--accent);
+    }
+
+    .dev-pulse-app .pr-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      align-items: center;
+    }
+
+    .dev-pulse-app .pr-repo {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+    }
+
+    .dev-pulse-app .pr-state-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .dev-pulse-app .pr-stat-box {
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .dev-pulse-app .pr-stat-box .added {
+      color: var(--green);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .dev-pulse-app .pr-stat-box .deleted {
+      color: var(--red);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .dev-pulse-app .pr-stat-box .files {
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+
+    /* Commit Timeline */
+    .dev-pulse-app .timeline {
+      position: relative;
+    }
+
+    .dev-pulse-app .timeline-day {
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .dev-pulse-app .timeline-day-header {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+      padding-left: 230px;
+    }
+
+    /* Git Graph */
+    .dev-pulse-app .git-graph-container {
+      display: grid;
+      grid-template-columns: 80px 80px 1fr;
+      gap: 0;
+      position: relative;
+    }
+
+    .dev-pulse-app .git-graph {
+      position: relative;
+      width: 80px;
+      min-height: 60px;
+    }
+
+    .dev-pulse-app .git-graph svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .dev-pulse-app .commit-item {
+      display: grid;
+      grid-template-columns: 80px 80px 1fr;
+      gap: 0;
+      margin-bottom: 0;
+      position: relative;
+      min-height: 80px;
+    }
+
+    .dev-pulse-app .commit-time {
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      padding-top: 1rem;
+      padding-right: 1rem;
+    }
+
+    .dev-pulse-app .commit-graph-cell {
+      position: relative;
+      width: 80px;
+    }
+
+    .dev-pulse-app .commit-content {
+      position: relative;
+      padding-left: 1rem;
+      padding-bottom: 0.75rem;
+    }
+
+    .dev-pulse-app .commit-dot {
+      position: absolute;
+      top: 1rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 3px solid;
+      background: var(--bg);
+      z-index: 2;
+      transform: translateX(-50%);
+    }
+
+    /* Graph lane lines */
+    .dev-pulse-app .graph-lane {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      border-radius: 2px;
+      opacity: 0.6;
+    }
+
+    .dev-pulse-app .graph-lane.active {
+      opacity: 1;
+    }
+
+    /* Curved connection paths */
+    .dev-pulse-app .graph-path {
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .dev-pulse-app .commit-card {
+      padding: 0.6rem 0.85rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .dev-pulse-app .commit-card:hover {
+      background: var(--surface-elevated);
+    }
+
+    .dev-pulse-app .commit-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .dev-pulse-app .commit-repo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+      background: var(--surface-elevated);
+    }
+
+    .dev-pulse-app .commit-stats {
+      display: flex;
+      gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    .dev-pulse-app .commit-stats .added { color: var(--green); }
+    .dev-pulse-app .commit-stats .deleted { color: var(--red); }
+
+    .dev-pulse-app .commit-message {
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .dev-pulse-app .commit-message a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .dev-pulse-app .commit-message a:hover {
+      color: var(--accent);
+    }
+
+    .dev-pulse-app .commit-hash {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: #7A6B8A;
+      background: var(--accent-light);
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      margin-left: 0.5rem;
+      text-decoration: none;
+    }
+
+    .dev-pulse-app .commit-hash:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Expandable cards (shared between commits and PRs) */
+    .dev-pulse-app .expandable-card {
+      cursor: pointer;
+    }
+
+    .dev-pulse-app .commit-files, .dev-pulse-app .pr-files {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed var(--border);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.3s ease, opacity 0.2s ease;
+    }
+
+    /* Hover: peek state - show border and hint of first file */
+    .dev-pulse-app .expandable-card:hover .commit-files, .dev-pulse-app .expandable-card:hover .pr-files {
+      max-height: 28px;
+      opacity: 0.6;
+    }
+
+    /* Expanded: full reveal */
+    .dev-pulse-app .expandable-card.expanded .commit-files, .dev-pulse-app .expandable-card.expanded .pr-files {
+      max-height: 500px;
+      opacity: 1;
+    }
+
+    /* PR Description Preview */
+    .dev-pulse-app .pr-description {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed var(--border);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      max-height: 8em;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dev-pulse-app .pr-description::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3em;
+      background: linear-gradient(transparent, var(--surface));
+      pointer-events: none;
+    }
+
+    .dev-pulse-app .pr-description-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Hide fade when expanded */
+    .dev-pulse-app .expandable-card.expanded .pr-description::after {
+      display: none;
+    }
+
+    .dev-pulse-app .expandable-card.expanded .pr-description {
+      max-height: none;
+    }
+
+    /* Commit Description Preview */
+    .dev-pulse-app .commit-description {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      max-height: 4em;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dev-pulse-app .commit-description::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2em;
+      background: linear-gradient(transparent, var(--surface));
+      pointer-events: none;
+    }
+
+    .dev-pulse-app .commit-description-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .dev-pulse-app .expandable-card.expanded .commit-description::after {
+      display: none;
+    }
+
+    .dev-pulse-app .expandable-card.expanded .commit-description {
+      max-height: none;
+    }
+
+    .dev-pulse-app .file-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .dev-pulse-app .file-item .file-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 1rem;
+    }
+
+    .dev-pulse-app .diagnostics-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-top: 2rem;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .dev-pulse-app .diagnostics-panel summary {
+      cursor: pointer;
+      padding: 1rem 1.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      list-style: none;
+    }
+
+    .dev-pulse-app .diagnostics-panel summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .dev-pulse-app .diagnostics-panel summary::after {
+      content: '+';
+      float: right;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    .dev-pulse-app .diagnostics-panel[open] summary::after {
+      content: '−';
+    }
+
+    .dev-pulse-app .diagnostics-content {
+      border-top: 1px solid var(--border);
+      padding: 1rem 1.25rem 1.25rem;
+    }
+
+    .dev-pulse-app .diagnostics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .dev-pulse-app .diagnostics-item {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.85rem 1rem;
+    }
+
+    .dev-pulse-app .diagnostics-label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.35rem;
+    }
+
+    .dev-pulse-app .diagnostics-value {
+      font-size: 0.85rem;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .dev-pulse-app .diagnostics-value code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    .dev-pulse-app .diagnostics-warnings {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--border);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+
+    .dev-pulse-app .diagnostics-warning {
+      margin-top: 0.35rem;
+    }
+
+    /* Footer */
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    /* Responsive */
+    @media (max-width: 1280px) {
+      .dev-pulse-app .hero { padding: 1.25rem 0 1.5rem; }
+      .dev-pulse-app .hero-stats { gap: 0.5rem; }
+    }
+
+    @media (max-width: 1100px) {
+      .dev-pulse-app .hero-content { flex-wrap: wrap; }
+      .dev-pulse-app .hero-left { width: 100%; }
+      .dev-pulse-app .hero-stats { width: 100%; gap: 0.75rem; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .dev-pulse-app .stat-card { padding: 1rem 0.75rem; }
+      .dev-pulse-app .stat-value { font-size: 1.85rem; }
+      .dev-pulse-app .weekly-grid.view-week {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .dev-pulse-app .weekly-grid.view-month {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.35rem;
+      }
+      .dev-pulse-app .weekly-grid.view-month .day-column { padding: 0.5rem; }
+      .dev-pulse-app .weekly-grid.view-month .day-name { font-size: 0.55rem; }
+      .dev-pulse-app .weekly-grid.view-month .day-date { font-size: 0.9rem; }
+      .dev-pulse-app .weekly-grid.view-day { max-width: 100%; }
+      /* Drop the gitgraph SVG below the theme's 2-col breakpoint — it doesn't
+         survive the squeeze and the commit cards already convey lane via repo
+         color. Keeps the timeline scannable instead of clipped. */
+      .dev-pulse-app .commit-item {
+        grid-template-columns: 64px 1fr;
+        gap: 0.5rem;
+      }
+      .dev-pulse-app .commit-graph-cell { display: none; }
+      .dev-pulse-app .timeline-graph-svg { display: none; }
+      .dev-pulse-app .timeline-day-header { padding-left: 0; }
+      .dev-pulse-app .commit-content { padding-left: 0.6rem; border-left: 2px solid var(--border); }
+      .dev-pulse-app .pr-card-main { gap: 0.85rem; }
+    }
+
+    @media (max-width: 768px) {
+      
+      
+      
+      
+      
+      
+      .dev-pulse-app .hero { padding: 1.25rem 0 1.5rem; margin-bottom: 1.5rem; }
+      .dev-pulse-app .hero-content { flex-wrap: wrap; gap: 1.5rem; }
+      .dev-pulse-app .hero-left { width: 100%; }
+      .dev-pulse-app .hero-left h1 { font-size: 2.25rem; }
+      .dev-pulse-app .hero-tagline { font-size: 0.95rem; }
+      .dev-pulse-app .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        width: 100%;
+      }
+      .dev-pulse-app .stat-card {
+        padding: 1rem 0.75rem;
+        min-width: 0;
+      }
+      .dev-pulse-app .stat-value { font-size: 1.85rem; }
+      .dev-pulse-app .stat-label { font-size: 0.65rem; }
+      .dev-pulse-app .section { margin-bottom: 2rem; }
+      .dev-pulse-app .section-header { flex-wrap: wrap; gap: 0.5rem; }
+      .dev-pulse-app .section-title { font-size: 1.25rem; }
+      .dev-pulse-app .weekly-grid.view-week { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+      .dev-pulse-app .weekly-grid.view-month {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.25rem;
+      }
+      .dev-pulse-app .weekly-grid.view-month .day-column {
+        padding: 0.35rem;
+      }
+      .dev-pulse-app .weekly-grid.view-month .day-name {
+        font-size: 0.45rem;
+      }
+      .dev-pulse-app .weekly-grid.view-month .day-date {
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem;
+      }
+      .dev-pulse-app .weekly-grid.view-month .day-bars {
+        display: none;
+      }
+      .dev-pulse-app .weekly-grid.view-month .day-stats {
+        display: none;
+      }
+      .dev-pulse-app .day-hero { padding: 1.5rem 1rem; border-radius: 4px; }
+      .dev-pulse-app .day-hero .hero-date {
+        font-size: 1.75rem;
+      }
+      .dev-pulse-app .day-hero .hero-stats-row {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+      }
+      .dev-pulse-app .hourly-bars {
+        height: 60px;
+      }
+      .dev-pulse-app .categories-grid { grid-template-columns: 1fr; }
+      .dev-pulse-app .timeline-graph-svg { display: none; }
+      .dev-pulse-app .commit-item { grid-template-columns: 56px 1fr; gap: 0.5rem; min-height: 0; }
+      .dev-pulse-app .commit-graph-cell { display: none; }
+      .dev-pulse-app .commit-time {
+        text-align: right;
+        padding: 0.75rem 0.25rem 0 0;
+        font-size: 0.65rem;
+        white-space: nowrap;
+        line-height: 1.2;
+      }
+      .dev-pulse-app .commit-content { padding: 0 0 0.75rem 0.6rem; border-left: 3px solid var(--accent); min-width: 0; }
+      .dev-pulse-app .commit-card { padding: 0.85rem 1rem; border-radius: 3px; }
+      .dev-pulse-app .commit-header { flex-wrap: wrap; gap: 0.4rem; row-gap: 0.5rem; }
+      .dev-pulse-app .commit-message { font-size: 0.95rem; overflow-wrap: anywhere; word-break: break-word; }
+      .dev-pulse-app .commit-hash { margin-left: 0.35rem; font-size: 0.65rem; }
+      .dev-pulse-app .timeline-day-header { padding-left: 0; }
+      .dev-pulse-app .pr-card { padding: 0.85rem 1rem; }
+      .dev-pulse-app .pr-card-main { grid-template-columns: auto 1fr; gap: 0.85rem; }
+      .dev-pulse-app .pr-stat-box { display: none; }
+      
+      
+      
+      
+    }
+
+    @media (max-width: 420px) {
+      
+      
+      
+      .dev-pulse-app .hero-left h1 { font-size: 1.85rem; letter-spacing: -0.01em; }
+      .dev-pulse-app .stat-value { font-size: 1.5rem; }
+      .dev-pulse-app .stat-card { padding: 0.85rem 0.5rem; }
+      .dev-pulse-app .toggle-btn { padding: 0.4rem 0.85rem; font-size: 0.75rem; }
+      .dev-pulse-app .commit-item { grid-template-columns: 48px 1fr; gap: 0.4rem; }
+      .dev-pulse-app .commit-time { font-size: 0.6rem; padding-right: 0.15rem; }
+      .dev-pulse-app .commit-card { padding: 0.75rem 0.85rem; }
+      .dev-pulse-app .commit-message { font-size: 0.9rem; }
+      
+      
+      
+    }
+  

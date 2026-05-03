@@ -15,6 +15,9 @@ require_once get_template_directory() . '/inc/post-types.php';
 // Inline SVG icon helper (minimalcode_icon).
 require_once get_template_directory() . '/inc/icons.php';
 
+// Dev Pulse data fetch + cache + payload render helpers.
+require_once get_template_directory() . '/inc/dev-pulse.php';
+
 /**
  * Theme setup
  */
