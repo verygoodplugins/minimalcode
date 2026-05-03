@@ -266,6 +266,28 @@ add_filter('query_vars', function ($vars) {
 });
 
 /**
+ * Legacy slug redirects for renamed pages.
+ *
+ * WordPress's built-in wp_old_slug_redirect ignores hierarchical post types,
+ * so renamed pages don't get a free 301. Anything moved to a new slug should
+ * be added here so old inbound links keep working.
+ */
+function minimalcode_legacy_page_redirects() {
+    if ( ! is_404() ) {
+        return;
+    }
+    $path = trim( (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_PATH ), '/' );
+    $map  = array(
+        'jack-arturo' => '/about/',
+    );
+    if ( isset( $map[ $path ] ) ) {
+        wp_safe_redirect( home_url( $map[ $path ] ), 301 );
+        exit;
+    }
+}
+add_action( 'template_redirect', 'minimalcode_legacy_page_redirects' );
+
+/**
  * Auto-flush rewrite rules on theme switch so /dev-pulse/ and /colophon/
  * resolve immediately — no manual options-permalink.php save required.
  */

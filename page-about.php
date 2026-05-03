@@ -31,7 +31,7 @@ $social_links = minimalcode_social_links();
 		</div>
 
 		<div class="row"><span class="k">name</span><span class="v">jack arturo</span></div>
-		<div class="row"><span class="k">based</span><span class="v">MIA / LIS</span></div>
+		<div class="row"><span class="k">based</span><span class="v">MIA / LTS / GPL</span></div>
 		<div class="row"><span class="k">since</span><span class="v">2009</span></div>
 		<div class="row"><span class="k">role</span><span class="v">creator</span></div>
 

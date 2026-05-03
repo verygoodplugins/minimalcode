@@ -14,9 +14,20 @@
             <div>
                 <h4><?php esc_html_e( 'Systems', 'minimalcode' ); ?></h4>
                 <ul>
-                    <li><a href="#">automem</a></li>
-                    <li><a href="#">autohub</a></li>
-                    <li><a href="#">autojack</a></li>
+                    <?php
+                    $systems = array(
+                        'automem'  => array( 'post_tag', 'automem' ),
+                        'autohub'  => array( 'post_tag', 'autohub' ),
+                        'autojack' => array( 'category', 'autojack' ),
+                    );
+                    foreach ( $systems as $label => $term ) :
+                        $term_obj = get_term_by( 'slug', $term[1], $term[0] );
+                        if ( ! $term_obj || is_wp_error( $term_obj ) ) {
+                            continue;
+                        }
+                        ?>
+                        <li><a href="<?php echo esc_url( get_term_link( $term_obj ) ); ?>"><?php echo esc_html( $label ); ?></a></li>
+                    <?php endforeach; ?>
                 </ul>
             </div>
             <div>

@@ -41,7 +41,7 @@
 			</a>
 			<div class="brand-meta">
 				VOL.04 / <span class="iss">ISS.27</span><br>
-				EST. 2009 · MIA / LIS<br>
+				EST. 2009 · MIA / LTS / GPL<br>
 				jack arturo · vgp
 			</div>
 		</div>
