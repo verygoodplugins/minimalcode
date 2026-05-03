@@ -225,6 +225,35 @@ blockquote {
 blockquote p { margin: 0 0 0.6em; }
 blockquote p:last-child { margin-bottom: 0; }
 
+/* Pullquote — Gutenberg core ships padding: 4em 0; way too much. */
+.wp-block-pullquote {
+  padding: 1em 0;
+  margin: 1.2em 0;
+  text-align: left;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.wp-block-pullquote blockquote {
+  margin: 0;
+  padding: 0;
+  border-left: none;
+}
+
+.wp-block-pullquote p {
+  font-size: 1.15em;
+  line-height: 1.5;
+  margin: 0 0 0.5em;
+  font-style: italic;
+  color: var(--ink);
+}
+
+.wp-block-pullquote cite {
+  font-size: 0.85em;
+  font-style: normal;
+  color: var(--ink-mute);
+}
+
 /* Lists */
 ul, ol {
   margin-left: var(--spacing-lg);
