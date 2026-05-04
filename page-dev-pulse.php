@@ -34,6 +34,20 @@ if ( empty( $pulse_posts ) ) {
 }
 
 $total_posts = (int) wp_count_posts()->publish;
+
+$devpulse_data = function_exists( 'minimalcode_devpulse_get_data' )
+	? minimalcode_devpulse_get_data()
+	: array( 'stats' => array(), 'commits' => array(), 'prs' => array() );
+
+$devpulse_stats = is_array( $devpulse_data['stats'] ?? null ) ? $devpulse_data['stats'] : array();
+$devpulse_total_commits = (int) ( $devpulse_stats['commits'] ?? 0 );
+$devpulse_open_prs = 0;
+foreach ( (array) ( $devpulse_data['prs'] ?? array() ) as $pr ) {
+	if ( ( $pr['state'] ?? '' ) === 'OPEN' ) {
+		$devpulse_open_prs++;
+	}
+}
+$devpulse_active_repos = is_array( $devpulse_data['repos'] ?? null ) ? count( $devpulse_data['repos'] ) : 0;
 ?>
 
 <div class="layout wrap">
@@ -48,11 +62,11 @@ $total_posts = (int) wp_count_posts()->publish;
 		</div>
 
 		<div class="rail-block">
-			<h4 class="rail-h"><?php esc_html_e( 'This Week', 'minimalcode' ); ?></h4>
+			<h4 class="rail-h"><?php esc_html_e( 'Activity', 'minimalcode' ); ?></h4>
 			<div class="rail-row"><span class="k">posts</span><span class="v"><?php echo esc_html( count( $pulse_posts ) ); ?></span></div>
-			<div class="rail-row"><span class="k">commits</span><span class="v">147</span></div>
-			<div class="rail-row"><span class="k">prs open</span><span class="v">3</span></div>
-			<div class="rail-row"><span class="k">aj autonom.</span><span class="v">31</span></div>
+			<div class="rail-row"><span class="k">commits</span><span class="v"><?php echo esc_html( number_format_i18n( $devpulse_total_commits ) ); ?></span></div>
+			<div class="rail-row"><span class="k">prs open</span><span class="v"><?php echo esc_html( $devpulse_open_prs ); ?></span></div>
+			<div class="rail-row"><span class="k">repos</span><span class="v"><?php echo esc_html( $devpulse_active_repos ); ?></span></div>
 		</div>
 
 		<div class="rail-block">
@@ -74,14 +88,101 @@ $total_posts = (int) wp_count_posts()->publish;
 			<div class="archive-deck"><?php esc_html_e( "What's running, what shipped this week, what's still smoking. The dashboard view of the notebook.", 'minimalcode' ); ?></div>
 		</header>
 
-		<div class="section-bar">
-			<span class="label"><?php esc_html_e( 'This Week', 'minimalcode' ); ?></span>
-			<span><?php esc_html_e( 'recent activity · most recent first', 'minimalcode' ); ?></span>
-			<span class="rule"></span>
-			<span><?php echo esc_html( count( $pulse_posts ) ); ?> <?php esc_html_e( 'entries', 'minimalcode' ); ?></span>
+		<div class="dev-pulse-app">
+			<header class="hero">
+				<div class="hero-content">
+					<div class="hero-left">
+						<div class="hero-tagline">
+							<span class="live-dot"></span>
+							<span id="period-label"><?php esc_html_e( 'Engineering velocity this week', 'minimalcode' ); ?></span>
+						</div>
+						<div class="time-toggle">
+							<button class="toggle-btn" data-period="day"><?php esc_html_e( 'Day', 'minimalcode' ); ?></button>
+							<button class="toggle-btn active" data-period="week"><?php esc_html_e( 'Week', 'minimalcode' ); ?></button>
+							<button class="toggle-btn" data-period="month"><?php esc_html_e( 'Month', 'minimalcode' ); ?></button>
+						</div>
+					</div>
+					<div class="hero-stats">
+						<div class="stat-card repos">
+							<div class="stat-value" id="repos-count">0</div>
+							<div class="stat-label"><?php esc_html_e( 'Repos Active', 'minimalcode' ); ?></div>
+						</div>
+						<div class="stat-card commits">
+							<div class="stat-value" id="commits-count">0</div>
+							<div class="stat-label"><?php esc_html_e( 'Commits', 'minimalcode' ); ?></div>
+						</div>
+						<div class="stat-card added">
+							<div class="stat-value" id="added-count">+0</div>
+							<div class="stat-label"><?php esc_html_e( 'Lines Added', 'minimalcode' ); ?></div>
+						</div>
+						<div class="stat-card deleted">
+							<div class="stat-value" id="deleted-count">-0</div>
+							<div class="stat-label"><?php esc_html_e( 'Lines Removed', 'minimalcode' ); ?></div>
+						</div>
+						<div class="stat-card prs">
+							<div class="stat-value" id="prs-count">0</div>
+							<div class="stat-label"><?php esc_html_e( 'Pull Requests', 'minimalcode' ); ?></div>
+						</div>
+					</div>
+				</div>
+			</header>
+
+			<section class="section">
+				<div class="section-header">
+					<h2 class="section-title" id="rhythm-title">
+						<span class="section-title-icon">📊</span>
+						<span id="rhythm-title-text"><?php esc_html_e( 'Weekly Rhythm', 'minimalcode' ); ?></span>
+					</h2>
+					<button class="toggle-btn" id="back-to-week-btn" style="display: none;" onclick="backToWeekView()">
+						← <?php esc_html_e( 'Back to Week', 'minimalcode' ); ?>
+					</button>
+				</div>
+				<div class="weekly-grid view-week" id="weekly-grid"></div>
+			</section>
+
+			<section class="section">
+				<div class="section-header">
+					<h2 class="section-title">
+						<span class="section-title-icon">📦</span>
+						<?php esc_html_e( 'Project Breakdown', 'minimalcode' ); ?>
+					</h2>
+				</div>
+				<div class="categories-grid" id="categories-grid"></div>
+			</section>
+
+			<section class="section">
+				<div class="section-header">
+					<h2 class="section-title">
+						<span class="section-title-icon">🔀</span>
+						<?php esc_html_e( 'Pull Requests', 'minimalcode' ); ?>
+					</h2>
+				</div>
+				<div class="pr-grid" id="pr-grid"></div>
+			</section>
+
+			<section class="section">
+				<div class="section-header">
+					<h2 class="section-title">
+						<span class="section-title-icon">⚡</span>
+						<?php esc_html_e( 'Commit Timeline', 'minimalcode' ); ?>
+					</h2>
+				</div>
+				<div class="timeline" id="timeline"></div>
+			</section>
+
+			<details class="diagnostics-panel" id="diagnostics-panel" hidden>
+				<summary><?php esc_html_e( 'Dataset Diagnostics', 'minimalcode' ); ?></summary>
+				<div class="diagnostics-content" id="diagnostics-content"></div>
+			</details>
 		</div>
 
 		<?php if ( ! empty( $pulse_posts ) ) : ?>
+			<div class="section-bar">
+				<span class="label"><?php esc_html_e( 'Notebook', 'minimalcode' ); ?></span>
+				<span><?php esc_html_e( 'tagged dev-pulse · most recent first', 'minimalcode' ); ?></span>
+				<span class="rule"></span>
+				<span><?php echo esc_html( count( $pulse_posts ) ); ?> <?php esc_html_e( 'entries', 'minimalcode' ); ?></span>
+			</div>
 			<div class="log">
 				<?php
 				foreach ( $pulse_posts as $rp ) :
@@ -110,78 +211,13 @@ $total_posts = (int) wp_count_posts()->publish;
 					</a>
 				<?php endforeach; ?>
 			</div>
-		<?php else : ?>
-			<div class="no-posts-empty">
-				<h2 class="serif"><?php esc_html_e( 'Quiet week', 'minimalcode' ); ?></h2>
-				<p><?php esc_html_e( 'Nothing tagged dev-pulse yet. The dashboard fills as work ships.', 'minimalcode' ); ?></p>
-			</div>
 		<?php endif; ?>
 
-		<div class="section-bar">
-			<span class="label"><?php esc_html_e( 'Cadence', 'minimalcode' ); ?></span>
-			<span><?php esc_html_e( 'rolling 30-day averages', 'minimalcode' ); ?></span>
-			<span class="rule"></span>
-		</div>
-
-		<div class="log">
-			<div class="entry">
-				<span class="entry-hash">cm</span>
-				<span class="entry-date">commits</span>
-				<span class="entry-title serif"><?php esc_html_e( '~21 / week', 'minimalcode' ); ?></span>
-				<span class="entry-tags"><span class="tag">git</span></span>
-			</div>
-			<div class="entry">
-				<span class="entry-hash">po</span>
-				<span class="entry-date">posts</span>
-				<span class="entry-title serif"><?php esc_html_e( '~2 / week', 'minimalcode' ); ?></span>
-				<span class="entry-tags"><span class="tag">notebook</span></span>
-			</div>
-			<div class="entry">
-				<span class="entry-hash">dp</span>
-				<span class="entry-date">deploys</span>
-				<span class="entry-title serif"><?php esc_html_e( 'as needed', 'minimalcode' ); ?></span>
-				<span class="entry-tags"><span class="tag">prod</span></span>
-			</div>
-			<div class="entry">
-				<span class="entry-hash">aj</span>
-				<span class="entry-date">autonom.</span>
-				<span class="entry-title serif"><?php esc_html_e( 'a few per day', 'minimalcode' ); ?></span>
-				<span class="entry-tags"><span class="tag aj">autojack</span></span>
-			</div>
-		</div>
-
-		<div class="section-bar">
-			<span class="label"><?php esc_html_e( 'Stack Health', 'minimalcode' ); ?></span>
-			<span><?php esc_html_e( 'last seen', 'minimalcode' ); ?></span>
-			<span class="rule"></span>
-		</div>
-
-		<div class="log">
-			<div class="entry">
-				<span class="entry-hash">am</span>
-				<span class="entry-date">automem</span>
-				<span class="entry-title serif"><?php esc_html_e( 'graph + recall live', 'minimalcode' ); ?></span>
-				<span class="entry-tags"><span class="tag">memory</span></span>
-			</div>
-			<div class="entry">
-				<span class="entry-hash">ah</span>
-				<span class="entry-date">autohub</span>
-				<span class="entry-title serif"><?php esc_html_e( 'orchestration steady', 'minimalcode' ); ?></span>
-				<span class="entry-tags"><span class="tag">orchestration</span></span>
-			</div>
-			<div class="entry">
-				<span class="entry-hash">aj</span>
-				<span class="entry-date">autojack</span>
-				<span class="entry-title serif"><?php esc_html_e( 'last pass: recent', 'minimalcode' ); ?></span>
-				<span class="entry-tags"><span class="tag aj">agent</span></span>
-			</div>
-			<div class="entry">
-				<span class="entry-hash">wp</span>
-				<span class="entry-date">wp-fusion</span>
-				<span class="entry-title serif"><?php esc_html_e( 'still pays the bills', 'minimalcode' ); ?></span>
-				<span class="entry-tags"><span class="tag">prod</span></span>
-			</div>
-		</div>
+		<?php
+		if ( function_exists( 'minimalcode_devpulse_render_payload_script' ) ) {
+			minimalcode_devpulse_render_payload_script( $devpulse_data );
+		}
+		?>
 	</main>
 
 	<aside>
