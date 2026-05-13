@@ -136,6 +136,11 @@ Tags: blog, minimal, dark-mode, code, technical
   --code-text: #e6edf3;
   --shadow: rgba(0, 0, 0, 0.4);
   --shadow-elev: rgba(0, 0, 0, 0.6);
+
+  /* Newspaper-palette fallbacks for dark mode */
+  --ink-soft: #b8aa97;
+  --ink-mute: #8f8374;
+  --rule:     #4c4339;
 }
 
 /* Base styles */
@@ -411,4 +416,3 @@ h2[id], h3[id], h4[id] {
 .wp-block-list strong {
   color: var(--text-primary);
 }
-
