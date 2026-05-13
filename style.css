@@ -110,6 +110,13 @@ Tags: blog, minimal, dark-mode, code, technical
   --fg-primary:   var(--text-primary);
   --fg-secondary: var(--text-secondary);
   --fg-tertiary:  var(--text-tertiary);
+
+  /* Newspaper-palette fallbacks. The full set lives in custom.css; these
+     guarantee blockquote / figcaption color even if custom.css fails to
+     load or rules cascade unexpectedly. */
+  --ink-soft: #2a2724;
+  --ink-mute: #6b665c;
+  --rule:     #1a1814;
 }
 
 /* Dark mode colors */
@@ -213,10 +220,11 @@ pre code {
   padding: 0;
 }
 
-/* Blockquotes — match .post-body p rhythm: no top margin, 1.2em bottom. */
+/* Blockquotes — match .post-body p rhythm: no top margin, 1.2em bottom.
+   Left bar uses --rule (near-black) so it doesn't fight link-hover --bleed. */
 blockquote {
-  border-left: 3px solid var(--bleed);
-  padding: 0 0 0 1em;
+  border-left: 4px solid var(--rule);
+  padding: 0 0 0 1.1em;
   margin: 0 0 1.2em;
   color: var(--ink-soft);
   font-style: italic;
