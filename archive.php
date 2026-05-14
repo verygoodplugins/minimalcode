@@ -51,7 +51,8 @@ get_header();
 					the_post();
 					$post_month  = get_the_date( 'F Y' );
 					$post_hash   = substr( md5( get_post_field( 'post_name', get_the_ID() ) ), 0, 6 );
-					$is_autojack = (bool) get_post_meta( get_the_ID(), '_minimalcode_autojack', true );
+					$is_autojack = minimalcode_is_autojack();
+					$has_thumb   = has_post_thumbnail();
 
 					if ( $post_month !== $current_month ) :
 						$current_month = $post_month;
@@ -63,7 +64,10 @@ get_header();
 						</div>
 					<?php endif; ?>
 
-					<a id="post-<?php the_ID(); ?>" <?php post_class( 'entry' ); ?> href="<?php the_permalink(); ?>">
+					<a id="post-<?php the_ID(); ?>" <?php post_class( 'entry' . ( $has_thumb ? ' entry--has-thumb' : '' ) ); ?> href="<?php the_permalink(); ?>">
+						<?php if ( $has_thumb ) : ?>
+							<span class="entry-thumb"><?php the_post_thumbnail( 'medium', array( 'loading' => 'lazy', 'alt' => '' ) ); ?></span>
+						<?php endif; ?>
 						<span class="entry-hash"><?php echo esc_html( $post_hash ); ?></span>
 						<span class="entry-date"><?php echo esc_html( strtoupper( get_the_date( 'M d' ) ) ); ?></span>
 						<span class="entry-title serif <?php echo $is_autojack ? 'aj' : ''; ?>"><?php the_title(); ?></span>

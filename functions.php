@@ -122,6 +122,32 @@ function minimalcode_primary_category_name() {
 }
 
 /**
+ * Shared AutoJack detector. Three signals: the explicit `_minimalcode_autojack`
+ * meta flag (source of truth, set via the Authorship meta box), the
+ * `autojack` category, and the legacy fallback of author ID 2 used before
+ * the meta flag existed. Keeping this in one place prevents single.php,
+ * the lede, and the log/archive/search rows from disagreeing on the same post.
+ *
+ * @param int|WP_Post|null $post Post ID, post object, or null for the current post in the loop.
+ * @return bool
+ */
+function minimalcode_is_autojack( $post = null ) {
+    $post_id = $post ? ( is_object( $post ) ? $post->ID : (int) $post ) : get_the_ID();
+    if ( ! $post_id ) {
+        return false;
+    }
+
+    if ( (bool) get_post_meta( $post_id, '_minimalcode_autojack', true ) ) {
+        return true;
+    }
+    if ( has_category( 'autojack', $post_id ) ) {
+        return true;
+    }
+    $author_id = (int) get_post_field( 'post_author', $post_id );
+    return 2 === $author_id;
+}
+
+/**
  * Custom excerpt length
  */
 function minimalcode_excerpt_length($length) {

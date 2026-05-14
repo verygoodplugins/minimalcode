@@ -98,49 +98,27 @@ pre:hover .copy-code-button {
 
 /* Legacy projects + chronological log removed — see newspaper rules. */
 
-/* Search Trigger Button */
-.search-trigger {
-  background: none;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-}
-
-.search-trigger:hover {
-  background-color: var(--bg-secondary);
-  border-color: var(--accent);
-  color: var(--text-primary);
-}
-
+/* Search trigger button — sizing/border come from .util-btn so the SEARCH chip
+   matches sibling util-btns (DARK, RSS). This rule only styles inner elements. */
 .search-trigger svg {
   width: 16px;
   height: 16px;
 }
 
 .search-kbd {
-  font-family: var(--font-code);
-  font-size: 0.75rem;
-  padding: 0.125rem 0.375rem;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  color: var(--text-tertiary);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  padding: 0 5px;
+  background-color: var(--paper-dark);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  color: var(--ink-mute);
 }
 
 @media (max-width: 640px) {
   .search-kbd {
     display: none;
-  }
-
-  .search-trigger {
-    padding: 0.5rem;
   }
 }
 
@@ -620,6 +598,11 @@ pre code {
 
 .log { display: flex; flex-direction: column; }
 .entry { display: grid; grid-template-columns: 78px 60px 1fr auto; gap: 18px; align-items: baseline; padding: 18px 0; border-bottom: 1px solid var(--rule); text-decoration: none; color: inherit; transition: background 0.1s ease, padding-left 0.15s ease; }
+.entry--has-thumb { grid-template-columns: 64px 78px 60px 1fr auto; align-items: center; }
+.entry-thumb { width: 64px; height: 64px; overflow: hidden; align-self: center; border: 1px solid var(--rule); background: var(--paper-dark); }
+.entry-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lede-byline { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-mute); }
+.lede-byline-name { letter-spacing: 0.04em; }
 .entry:hover { background: var(--paper-dark); padding-left: 8px; color: inherit; }
 .entry-hash { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 500; color: var(--ink); background: var(--paper-dark); padding: 4px 8px; border: 1px solid var(--rule); text-align: center; letter-spacing: 0.04em; align-self: center; }
 .entry:hover .entry-hash { background: var(--hot); border-color: var(--ink); }
@@ -663,8 +646,15 @@ pre code {
 .post-body iframe,
 .post-body .wp-block-embed,
 .post-body .wp-block-embed__wrapper,
-.post-body blockquote.twitter-tweet,
+.post-body .twitter-tweet,
 .about-author { max-width: 100%; }
+.post-body .wp-block-embed,
+.post-body .wp-block-embed__wrapper { margin-left: auto; margin-right: auto; text-align: center; }
+.post-body iframe { display: block; margin-left: auto; margin-right: auto; }
+/* Twitter's widgets.js replaces the original <blockquote class="twitter-tweet">
+   with a <div class="twitter-tweet">. Match the class on any tag, and use
+   !important because the script injects inline margin styles. */
+.post-body .twitter-tweet { margin-left: auto !important; margin-right: auto !important; }
 .about-meta { min-width: 0; }
 .post-meta-rail, .toc-rail { font-family: "JetBrains Mono", monospace; font-size: 11px; position: sticky; top: 24px; align-self: start; }
 .post-back { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-mute); text-decoration: none; text-transform: uppercase; letter-spacing: 0.08em; display: inline-block; margin-bottom: 24px; }
@@ -985,6 +975,8 @@ pre code {
   .lede-marker { writing-mode: horizontal-tb; transform: none; border-left: 0; border-bottom: 2px solid var(--bleed); padding: 0 0 6px; }
   .lede-title { font-size: 38px; }
   .entry { grid-template-columns: 1fr; gap: 8px; padding: 16px 0; }
+  .entry--has-thumb { grid-template-columns: 1fr; }
+  .entry-thumb { width: 100%; height: auto; max-height: 200px; }
   .entry-tags { justify-content: flex-start; }
   .month-rule { grid-template-columns: 1fr; gap: 8px; }
   .month-rule .ruling, .month-rule .rhs { display: none; }
