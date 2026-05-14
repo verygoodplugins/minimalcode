@@ -52,10 +52,8 @@ get_header();
 						<p class="lede-deck"><?php echo esc_html( $lede_excerpt ); ?></p>
 					<?php endif; ?>
 					<?php
-					$lede_is_autojack = (bool) get_post_meta( $lede_id, '_minimalcode_autojack', true )
-						|| has_category( 'autojack', $lede_id )
-						|| ( 2 === (int) get_the_author_meta( 'ID' ) );
-					$lede_author = $lede_is_autojack ? 'AutoJack' : get_the_author();
+					$lede_is_autojack = minimalcode_is_autojack( $lede_id );
+					$lede_author      = $lede_is_autojack ? 'AutoJack' : get_the_author();
 					?>
 					<div class="lede-byline">
 						<?php if ( $lede_is_autojack ) : ?>
@@ -87,8 +85,7 @@ get_header();
 					the_post();
 					$post_month  = get_the_date( 'F Y' );
 					$post_hash   = substr( md5( get_post_field( 'post_name', get_the_ID() ) ), 0, 6 );
-					$is_autojack = (bool) get_post_meta( get_the_ID(), '_minimalcode_autojack', true )
-						|| has_category( 'autojack' );
+					$is_autojack = minimalcode_is_autojack();
 					$has_thumb   = has_post_thumbnail();
 
 					if ( $post_month !== $current_month ) :
@@ -103,7 +100,7 @@ get_header();
 
 					<a id="post-<?php the_ID(); ?>" <?php post_class( 'entry' . ( $has_thumb ? ' entry--has-thumb' : '' ) ); ?> href="<?php the_permalink(); ?>">
 						<?php if ( $has_thumb ) : ?>
-							<span class="entry-thumb"><?php the_post_thumbnail( 'thumbnail', array( 'loading' => 'lazy', 'alt' => '' ) ); ?></span>
+							<span class="entry-thumb"><?php the_post_thumbnail( 'medium', array( 'loading' => 'lazy', 'alt' => '' ) ); ?></span>
 						<?php endif; ?>
 						<span class="entry-hash"><?php echo esc_html( $post_hash ); ?></span>
 						<span class="entry-date"><?php echo esc_html( strtoupper( get_the_date( 'M d' ) ) ); ?></span>

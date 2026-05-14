@@ -68,7 +68,7 @@ get_header();
 					<article id="post-<?php the_ID(); ?>" <?php post_class( 'proj-card' ); ?>>
 						<?php if ( $image_url ) : ?>
 							<a class="proj-card-image" href="<?php echo esc_url( $link_url ); ?>" target="_blank" rel="noopener noreferrer">
-								<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php the_title_attribute(); ?>" decoding="async" data-no-lazy="1">
+								<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy" decoding="async" data-no-lazy="1">
 							</a>
 						<?php endif; ?>
 
