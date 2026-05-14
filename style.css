@@ -78,6 +78,9 @@ Tags: blog, minimal, dark-mode, code, technical
   /* Layout */
   --max-width: 1280px;
   --max-width-prose: 700px;
+  --gutter: 32px;        /* horizontal page gutter, overridden at narrow widths */
+  --bleed-x: 32px;       /* figure bleed at ≥1200px (fits inside 36px rail gap) */
+  --bleed-x-small: 16px; /* figure bleed 881–1199px */
 
   /* Spacing */
   --spacing-xs: 0.5rem;
