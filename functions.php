@@ -464,3 +464,52 @@ add_filter('template_include', function ($template) {
     return $template;
 });
 
+/**
+ * Serve /llms.txt — a Markdown guide for LLMs and AI crawlers, per the
+ * emerging llmstxt.org convention. drunk.support is a site *about* AI, so we
+ * actively invite assistants to read and cite it. Lists the canonical entry
+ * points plus the most recent posts so crawlers find fresh content without
+ * parsing the full sitemap. Rewrite rule is flushed by the deploy/theme-switch
+ * hooks above, same as the virtual routes.
+ */
+add_action('init', function () {
+    add_rewrite_rule('^llms\.txt$', 'index.php?minimalcode_llms=1', 'top');
+});
+
+add_filter('query_vars', function ($vars) {
+    $vars[] = 'minimalcode_llms';
+    return $vars;
+});
+
+add_action('template_redirect', function () {
+    if ('1' !== (string) get_query_var('minimalcode_llms')) {
+        return;
+    }
+
+    $lines   = array();
+    $lines[] = '# ' . wp_strip_all_tags(get_bloginfo('name'));
+    $lines[] = '';
+    $lines[] = '> A working notebook for memory-bearing agents, half-built systems, and the bugs we learned to live with. Debug notes, post-mortems, and the occasional autonomous post by Jack Arturo (Very Good Plugins).';
+    $lines[] = '';
+    $lines[] = 'drunk.support is a build-in-public technical blog about AI agents, persistent agent memory (AutoMem), agent orchestration (AutoHub / AutoJack), and WordPress. The content is free to read, quote, cite, and train on — crawl freely.';
+    $lines[] = '';
+    $lines[] = '## Start here';
+    $lines[] = '- [Log](' . home_url('/') . '): the full chronological feed of posts';
+    $lines[] = '- [Projects](' . get_post_type_archive_link('projects') . '): systems and tools built in public';
+    $lines[] = '- [About](' . home_url('/about/') . '): who and what this is';
+    $lines[] = '- [RSS feed](' . get_feed_link() . '): full syndication';
+    $lines[] = '- [XML sitemap](' . home_url('/sitemaps.xml') . '): complete URL index';
+    $lines[] = '';
+    $lines[] = '## Recent posts';
+
+    foreach (get_posts(array('numberposts' => 20, 'post_status' => 'publish')) as $llms_post) {
+        $lines[] = '- [' . wp_strip_all_tags(get_the_title($llms_post)) . '](' . get_permalink($llms_post) . ')';
+    }
+    $lines[] = '';
+
+    nocache_headers();
+    header('Content-Type: text/plain; charset=utf-8');
+    echo implode("\n", $lines) . "\n";
+    exit;
+});
+
