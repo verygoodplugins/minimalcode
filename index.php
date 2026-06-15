@@ -11,7 +11,7 @@ get_header();
 <div class="layout wrap">
 	<aside class="rail">
 		<div class="rail-block">
-			<h4 class="rail-h"><?php esc_html_e( 'Status', 'minimalcode' ); ?></h4>
+			<h2 class="rail-h"><?php esc_html_e( 'Status', 'minimalcode' ); ?></h2>
 			<div class="rail-row"><span class="k">automem</span><span class="v ok">&bull; ok</span></div>
 			<div class="rail-row"><span class="k">autohub</span><span class="v ok">&bull; ok</span></div>
 			<div class="rail-row"><span class="k">autojack</span><span class="v ok">&bull; awake</span></div>
@@ -19,7 +19,7 @@ get_header();
 			<div class="rail-row"><span class="k">wakeword</span><span class="v warn">&bull; flaky</span></div>
 		</div>
 		<div class="rail-block">
-			<h4 class="rail-h"><?php esc_html_e( 'Counters', 'minimalcode' ); ?></h4>
+			<h2 class="rail-h"><?php esc_html_e( 'Counters', 'minimalcode' ); ?></h2>
 			<div class="rail-row"><span class="k">posts</span><span class="v"><?php echo esc_html( wp_count_posts()->publish ); ?></span></div>
 			<div class="rail-row"><span class="k">commits/wk</span><span class="v">147</span></div>
 			<div class="rail-row"><span class="k">memory nodes</span><span class="v">4.7M</span></div>
@@ -100,7 +100,7 @@ get_header();
 
 					<a id="post-<?php the_ID(); ?>" <?php post_class( 'entry' . ( $has_thumb ? ' entry--has-thumb' : '' ) ); ?> href="<?php the_permalink(); ?>">
 						<?php if ( $has_thumb ) : ?>
-							<span class="entry-thumb"><?php the_post_thumbnail( 'medium', array( 'loading' => 'lazy', 'alt' => '' ) ); ?></span>
+							<span class="entry-thumb"><?php the_post_thumbnail( 'medium', array( 'loading' => 'lazy' ) ); ?></span>
 						<?php endif; ?>
 						<span class="entry-hash"><?php echo esc_html( $post_hash ); ?></span>
 						<span class="entry-date"><?php echo esc_html( strtoupper( get_the_date( 'M d' ) ) ); ?></span>
@@ -144,7 +144,7 @@ get_header();
 
 	<aside>
 		<div class="aside-block">
-			<h4 class="aside-h"><?php esc_html_e( 'Filed Under', 'minimalcode' ); ?></h4>
+			<h2 class="aside-h"><?php esc_html_e( 'Filed Under', 'minimalcode' ); ?></h2>
 			<div class="tag-cloud">
 				<?php foreach ( get_tags( array( 'number' => 18, 'orderby' => 'count', 'order' => 'DESC' ) ) as $tag ) : ?>
 					<a class="tag size-<?php echo esc_attr( min( 3, max( 1, (int) $tag->count ) ) ); ?>" href="<?php echo esc_url( get_tag_link( $tag ) ); ?>"><?php echo esc_html( $tag->name ); ?></a>
