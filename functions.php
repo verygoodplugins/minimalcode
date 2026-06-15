@@ -473,7 +473,13 @@ add_filter('template_include', function ($template) {
  * hooks above, same as the virtual routes.
  */
 add_action('init', function () {
-    add_rewrite_rule('^llms\.txt$', 'index.php?minimalcode_llms=1', 'top');
+    add_rewrite_rule('^llms\.txt/?$', 'index.php?minimalcode_llms=1', 'top');
+});
+
+// Serve /llms.txt at the exact path (like robots.txt) — WordPress's canonical
+// redirect would otherwise 301 it to /llms.txt/, which AI crawlers don't expect.
+add_filter('redirect_canonical', function ($redirect_url) {
+    return ('1' === (string) get_query_var('minimalcode_llms')) ? false : $redirect_url;
 });
 
 add_filter('query_vars', function ($vars) {
@@ -511,5 +517,5 @@ add_action('template_redirect', function () {
     header('Content-Type: text/plain; charset=utf-8');
     echo implode("\n", $lines) . "\n";
     exit;
-});
+}, 0);
 
