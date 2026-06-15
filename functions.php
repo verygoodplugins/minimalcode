@@ -250,12 +250,85 @@ function minimalcode_customize_register($wp_customize) {
 add_action('customize_register', 'minimalcode_customize_register');
 
 /**
- * Add meta viewport tag for mobile
+ * Trim head noise. The viewport meta lives in header.php (this used to echo a
+ * second, duplicate tag). WordPress's version generator is suppressed so the
+ * exact core version isn't advertised in the page head.
  */
-function minimalcode_viewport_meta() {
-    echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+remove_action( 'wp_head', 'wp_generator' );
+
+/**
+ * Output BlogPosting JSON-LD on single posts for rich-result eligibility.
+ *
+ * SEOPress (free) emits site-level WebSite/Organization schema but no
+ * per-article structured data, so the theme fills that gap. Guarded to single
+ * posts so it never doubles up on archives, pages, or the virtual routes. If a
+ * schema-capable SEO plugin later starts emitting Article/BlogPosting schema,
+ * remove this to avoid two competing blocks.
+ */
+function minimalcode_article_schema() {
+    if ( ! is_singular( 'post' ) ) {
+        return;
+    }
+
+    $post = get_queried_object();
+    if ( ! $post instanceof WP_Post ) {
+        return;
+    }
+
+    $is_autojack = minimalcode_is_autojack( $post );
+    $author_name = $is_autojack ? 'AutoJack' : get_the_author_meta( 'display_name', $post->post_author );
+
+    $description = has_excerpt( $post )
+        ? wp_strip_all_tags( get_the_excerpt( $post ) )
+        : wp_trim_words( wp_strip_all_tags( $post->post_content ), 40, '' );
+
+    $schema = array(
+        '@context'         => 'https://schema.org',
+        '@type'            => 'BlogPosting',
+        'mainEntityOfPage' => array(
+            '@type' => 'WebPage',
+            '@id'   => get_permalink( $post ),
+        ),
+        'headline'         => wp_strip_all_tags( get_the_title( $post ) ),
+        'datePublished'    => get_the_date( 'c', $post ),
+        'dateModified'     => get_the_modified_date( 'c', $post ),
+        'author'           => array(
+            '@type' => 'Person',
+            'name'  => $author_name,
+        ),
+        'publisher'        => array(
+            '@type' => 'Organization',
+            'name'  => get_bloginfo( 'name' ),
+        ),
+    );
+
+    if ( $description ) {
+        $schema['description'] = $description;
+    }
+
+    $logo = get_site_icon_url( 512 );
+    if ( $logo ) {
+        $schema['publisher']['logo'] = array(
+            '@type' => 'ImageObject',
+            'url'   => $logo,
+        );
+    }
+
+    if ( has_post_thumbnail( $post ) ) {
+        $thumb = wp_get_attachment_image_src( get_post_thumbnail_id( $post ), 'large' );
+        if ( $thumb ) {
+            $schema['image'] = array(
+                '@type'  => 'ImageObject',
+                'url'    => $thumb[0],
+                'width'  => $thumb[1],
+                'height' => $thumb[2],
+            );
+        }
+    }
+
+    echo "\n" . '<script type="application/ld+json">' . wp_json_encode( $schema ) . '</script>' . "\n";
 }
-add_action('wp_head', 'minimalcode_viewport_meta');
+add_action( 'wp_head', 'minimalcode_article_schema' );
 
 /**
  * Add body classes for dark mode
@@ -389,5 +462,54 @@ add_filter('template_include', function ($template) {
     }
 
     return $template;
+});
+
+/**
+ * Serve /llms.txt — a Markdown guide for LLMs and AI crawlers, per the
+ * emerging llmstxt.org convention. drunk.support is a site *about* AI, so we
+ * actively invite assistants to read and cite it. Lists the canonical entry
+ * points plus the most recent posts so crawlers find fresh content without
+ * parsing the full sitemap. Rewrite rule is flushed by the deploy/theme-switch
+ * hooks above, same as the virtual routes.
+ */
+add_action('init', function () {
+    add_rewrite_rule('^llms\.txt$', 'index.php?minimalcode_llms=1', 'top');
+});
+
+add_filter('query_vars', function ($vars) {
+    $vars[] = 'minimalcode_llms';
+    return $vars;
+});
+
+add_action('template_redirect', function () {
+    if ('1' !== (string) get_query_var('minimalcode_llms')) {
+        return;
+    }
+
+    $lines   = array();
+    $lines[] = '# ' . wp_strip_all_tags(get_bloginfo('name'));
+    $lines[] = '';
+    $lines[] = '> A working notebook for memory-bearing agents, half-built systems, and the bugs we learned to live with. Debug notes, post-mortems, and the occasional autonomous post by Jack Arturo (Very Good Plugins).';
+    $lines[] = '';
+    $lines[] = 'drunk.support is a build-in-public technical blog about AI agents, persistent agent memory (AutoMem), agent orchestration (AutoHub / AutoJack), and WordPress. The content is free to read, quote, cite, and train on — crawl freely.';
+    $lines[] = '';
+    $lines[] = '## Start here';
+    $lines[] = '- [Log](' . home_url('/') . '): the full chronological feed of posts';
+    $lines[] = '- [Projects](' . get_post_type_archive_link('projects') . '): systems and tools built in public';
+    $lines[] = '- [About](' . home_url('/about/') . '): who and what this is';
+    $lines[] = '- [RSS feed](' . get_feed_link() . '): full syndication';
+    $lines[] = '- [XML sitemap](' . home_url('/sitemaps.xml') . '): complete URL index';
+    $lines[] = '';
+    $lines[] = '## Recent posts';
+
+    foreach (get_posts(array('numberposts' => 20, 'post_status' => 'publish')) as $llms_post) {
+        $lines[] = '- [' . wp_strip_all_tags(get_the_title($llms_post)) . '](' . get_permalink($llms_post) . ')';
+    }
+    $lines[] = '';
+
+    nocache_headers();
+    header('Content-Type: text/plain; charset=utf-8');
+    echo implode("\n", $lines) . "\n";
+    exit;
 });
 
