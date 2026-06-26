@@ -153,6 +153,25 @@ function minimalcode_is_autojack( $post = null ) {
 }
 
 /**
+ * The WordPress user account for AutoJack, the AI agent author.
+ *
+ * Avatar resolution comes from this identity, NOT a post's own author: a post
+ * can be flagged AutoJack (the Authorship checkbox or the `autojack` category)
+ * while still saved by a human, whose Gravatar would otherwise show. Defaults to
+ * user ID 2 — the legacy account also recognized by minimalcode_is_autojack() —
+ * and is filterable for installs where the agent is a different user.
+ *
+ * @return int Agent user ID.
+ */
+function minimalcode_autojack_user_id() {
+    static $id = null;
+    if ( null === $id ) {
+        $id = (int) apply_filters( 'minimalcode_autojack_user_id', 2 );
+    }
+    return $id;
+}
+
+/**
  * Resolve the author-avatar URL for a post.
  *
  * AutoJack posts use the Gravatar on the agent's account, with the theme-bundled
@@ -172,13 +191,13 @@ function minimalcode_author_avatar_url( $post = null ) {
     $author_id = (int) get_post_field( 'post_author', $post_id );
 
     if ( minimalcode_is_autojack( $post_id ) ) {
-        // AutoJack's avatar is the Gravatar set on the agent's account
-        // (hey@autojack.ai). All agent posts are authored by that user, so the
-        // author Gravatar resolves to it. The theme-bundled portrait is passed
-        // as Gravatar's `default`, so a missing or unreachable Gravatar
+        // Resolve from the agent's account, not the post author — a flagged
+        // post can still be saved by a human. The theme-bundled portrait is
+        // passed as Gravatar's `default`, so a missing or unreachable Gravatar
         // degrades to a matching local image instead of a mystery-man.
         $bundled = get_template_directory_uri() . '/assets/images/autojack-profile.jpg';
-        $grav    = get_avatar_url( $author_id, array( 'size' => 192, 'default' => $bundled ) );
+        $agent   = minimalcode_autojack_user_id();
+        $grav    = $agent ? get_avatar_url( $agent, array( 'size' => 192, 'default' => $bundled ) ) : '';
         return $grav ? $grav : $bundled;
     }
 

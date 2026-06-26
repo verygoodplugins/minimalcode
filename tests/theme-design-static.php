@@ -10,9 +10,9 @@ $root = dirname( __DIR__ );
 
 $checks = array(
 	'header.php'            => array( 'ticker', 'masthead', 'nav-item', 'brand-logo' ),
-	'index.php'             => array( 'layout wrap', 'lede', 'entry-hash', 'month-rule' ),
+	'index.php'             => array( 'layout wrap', 'lede', 'entry-author', 'entry-excerpt', 'month-rule' ),
 	'single.php'            => array( 'single wrap', 'post-meta-rail', 'post-headline', 'aj-banner' ),
-	'assets/css/custom.css' => array( '--paper', '--hot', '.ticker', '.masthead', '.entry-hash' ),
+	'assets/css/custom.css' => array( '--paper', '--hot', '.ticker', '.masthead', '.entry-author' ),
 );
 
 $forbidden_css = array(
