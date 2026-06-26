@@ -5,11 +5,14 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
+/* The editor iframe doesn't inherit the theme's :root tokens, so the newspaper
+   palette is hardcoded here as light-mode values (the block editor has no
+   front-end dark toggle). Keep these in sync with custom.css :root. */
 .editor-styles-wrapper {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 18px;
   line-height: 1.7;
-  color: #1a1a1a;
+  color: #0e0d0c; /* --ink */
 }
 
 .editor-styles-wrapper h1,
@@ -36,34 +39,34 @@
 }
 
 .editor-styles-wrapper a {
-  color: #0066cc;
+  color: #b53114; /* --link */
   text-decoration: none;
 }
 
 .editor-styles-wrapper code {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 0.9em;
-  background-color: #f6f8fa;
-  color: #24292e;
+  background-color: #ebe5d6; /* --paper-dark */
+  color: #0e0d0c; /* --ink */
   padding: 0.2em 0.4em;
-  border-radius: 3px;
+  border-radius: 0;
 }
 
 .editor-styles-wrapper pre {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
-  background-color: #f6f8fa;
-  color: #24292e;
+  background-color: #ebe5d6; /* --paper-dark */
+  color: #0e0d0c; /* --ink */
   padding: 1.5rem;
-  border-radius: 6px;
+  border-radius: 0;
   overflow-x: auto;
-  border: 1px solid #e1e4e8;
+  border: 1.5px solid #1a1814; /* --rule */
 }
 
 .editor-styles-wrapper blockquote {
-  border-left: 4px solid #0066cc;
+  border-left: 4px solid #1a1814; /* --rule */
   padding-left: 1.5rem;
   margin: 1.5rem 0;
-  color: #666666;
+  color: #6b665c; /* --ink-mute */
   font-style: italic;
 }
 
