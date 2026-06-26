@@ -51,13 +51,18 @@ $recent_posts = get_posts(
 			<div class="log">
 				<?php
 				foreach ( $recent_posts as $rp ) :
-					$rp_hash      = substr( md5( $rp->post_name ), 0, 6 );
-					$rp_autojack  = (bool) get_post_meta( $rp->ID, '_minimalcode_autojack', true );
+					$rp_autojack = minimalcode_is_autojack( $rp->ID );
+					$rp_excerpt  = wp_strip_all_tags( get_the_excerpt( $rp ) );
 					?>
-					<a class="entry" href="<?php echo esc_url( get_permalink( $rp->ID ) ); ?>">
-						<span class="entry-hash"><?php echo esc_html( $rp_hash ); ?></span>
+					<a class="entry<?php echo $rp_autojack ? ' entry--aj' : ''; ?>" href="<?php echo esc_url( get_permalink( $rp->ID ) ); ?>">
 						<span class="entry-date"><?php echo esc_html( strtoupper( get_the_date( 'M d', $rp->ID ) ) ); ?></span>
-						<span class="entry-title serif <?php echo $rp_autojack ? 'aj' : ''; ?>"><?php echo esc_html( get_the_title( $rp->ID ) ); ?></span>
+						<span class="entry-author"><?php echo minimalcode_author_avatar( $rp->ID, 32 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- helper escapes internally. ?></span>
+						<span class="entry-main">
+							<span class="entry-title serif"><?php echo esc_html( get_the_title( $rp->ID ) ); ?></span>
+							<?php if ( $rp_excerpt ) : ?>
+								<span class="entry-excerpt"><?php echo esc_html( $rp_excerpt ); ?></span>
+							<?php endif; ?>
+						</span>
 						<span class="entry-tags">
 							<?php if ( $rp_autojack ) : ?>
 								<span class="tag aj">autojack</span>

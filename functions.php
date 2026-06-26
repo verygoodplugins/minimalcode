@@ -70,22 +70,27 @@ function minimalcode_scripts() {
     // Custom styles
     wp_enqueue_style('minimalcode-custom', get_template_directory_uri() . '/assets/css/custom.css', array(), filemtime(get_template_directory() . '/assets/css/custom.css'));
     
-    // Prism.js for code highlighting (dark mode compatible)
-    wp_enqueue_style('prismjs', 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css', array(), '1.29.0');
-    wp_enqueue_script('prismjs', 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js', array(), '1.29.0', true);
-    
-    // Add language support for common languages
-    $prism_languages = array('javascript', 'python', 'bash', 'json', 'css', 'php', 'typescript');
-    foreach ($prism_languages as $lang) {
-        wp_enqueue_script(
-            'prismjs-' . $lang,
-            'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-' . $lang . '.min.js',
-            array('prismjs'),
-            '1.29.0',
-            true
-        );
+    // Prism.js for code highlighting. The Code Syntax Block plugin already
+    // ships and enqueues its own Prism (only on pages that contain a code
+    // block), so loading a second copy from the CDN is pure duplication. Only
+    // fall back to the theme's CDN Prism when that plugin is NOT active.
+    if ( ! function_exists( 'mkaz_prism_theme_css' ) ) {
+        wp_enqueue_style('prismjs', 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css', array(), '1.29.0');
+        wp_enqueue_script('prismjs', 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js', array(), '1.29.0', true);
+
+        // Add language support for common languages
+        $prism_languages = array('javascript', 'python', 'bash', 'json', 'css', 'php', 'typescript');
+        foreach ($prism_languages as $lang) {
+            wp_enqueue_script(
+                'prismjs-' . $lang,
+                'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-' . $lang . '.min.js',
+                array('prismjs'),
+                '1.29.0',
+                true
+            );
+        }
     }
-    
+
     // Theme behavior + live ⌘K search.
     // Depends on wp-api-fetch so the search modal can hit /wp/v2/search.
     wp_enqueue_script('minimalcode-theme', get_template_directory_uri() . '/assets/js/theme.js', array('wp-api-fetch'), filemtime(get_template_directory() . '/assets/js/theme.js'), true);
@@ -145,6 +150,101 @@ function minimalcode_is_autojack( $post = null ) {
     }
     $author_id = (int) get_post_field( 'post_author', $post_id );
     return 2 === $author_id;
+}
+
+/**
+ * The WordPress user account for AutoJack, the AI agent author.
+ *
+ * Avatar resolution comes from this identity, NOT a post's own author: a post
+ * can be flagged AutoJack (the Authorship checkbox or the `autojack` category)
+ * while still saved by a human, whose Gravatar would otherwise show. Defaults to
+ * user ID 2 — the legacy account also recognized by minimalcode_is_autojack() —
+ * and is filterable for installs where the agent is a different user.
+ *
+ * @return int Agent user ID.
+ */
+function minimalcode_autojack_user_id() {
+    static $id = null;
+    if ( null === $id ) {
+        $id = (int) apply_filters( 'minimalcode_autojack_user_id', 2 );
+    }
+    return $id;
+}
+
+/**
+ * Resolve the author-avatar URL for a post.
+ *
+ * AutoJack posts use the Gravatar on the agent's account, with the theme-bundled
+ * portrait as the offline fallback. Human posts use the /about/ page featured
+ * image, then the author's Gravatar. Returns '' if nothing resolves (callers
+ * show initials).
+ *
+ * @param int|WP_Post|null $post Post ID, object, or null for the current post.
+ * @return string Image URL or ''.
+ */
+function minimalcode_author_avatar_url( $post = null ) {
+    $post_id = $post ? ( is_object( $post ) ? $post->ID : (int) $post ) : get_the_ID();
+    if ( ! $post_id ) {
+        return '';
+    }
+
+    $author_id = (int) get_post_field( 'post_author', $post_id );
+
+    if ( minimalcode_is_autojack( $post_id ) ) {
+        // Resolve from the agent's account, not the post author — a flagged
+        // post can still be saved by a human. The theme-bundled portrait is
+        // passed as Gravatar's `default`, so a missing or unreachable Gravatar
+        // degrades to a matching local image instead of a mystery-man.
+        $bundled = get_template_directory_uri() . '/assets/images/autojack-profile.jpg';
+        $agent   = minimalcode_autojack_user_id();
+        $grav    = $agent ? get_avatar_url( $agent, array( 'size' => 192, 'default' => $bundled ) ) : '';
+        return $grav ? $grav : $bundled;
+    }
+
+    // Human author: /about/ page featured image, else the author's Gravatar.
+    $about_page = get_page_by_path( 'about' );
+    if ( $about_page && has_post_thumbnail( $about_page->ID ) ) {
+        return (string) get_the_post_thumbnail_url( $about_page->ID, 'thumbnail' );
+    }
+
+    return (string) get_avatar_url( $author_id, array( 'size' => 96 ) );
+}
+
+/**
+ * Render a small author avatar for log rows and bylines. Falls back to an
+ * initials monogram when no image resolves.
+ *
+ * @param int|WP_Post|null $post Post ID, object, or null for the current post.
+ * @param int              $size Rendered px (square).
+ * @return string HTML.
+ */
+function minimalcode_author_avatar( $post = null, $size = 32 ) {
+    $post_id     = $post ? ( is_object( $post ) ? $post->ID : (int) $post ) : get_the_ID();
+    $is_autojack = minimalcode_is_autojack( $post_id );
+    $name        = $is_autojack
+        ? 'AutoJack'
+        : get_the_author_meta( 'display_name', (int) get_post_field( 'post_author', $post_id ) );
+    $url         = minimalcode_author_avatar_url( $post_id );
+    $class       = 'entry-avatar' . ( $is_autojack ? ' aj' : '' );
+    $dim         = (int) $size;
+
+    if ( $url ) {
+        return sprintf(
+            '<img class="%s" src="%s" alt="%s" width="%d" height="%d" loading="lazy" decoding="async">',
+            esc_attr( $class ),
+            esc_url( $url ),
+            esc_attr( $name ),
+            $dim,
+            $dim
+        );
+    }
+
+    $initials = $is_autojack ? 'AJ' : strtoupper( mb_substr( (string) $name, 0, 1 ) );
+    return sprintf(
+        '<span class="%s entry-avatar--fallback" aria-hidden="true">%s</span>',
+        esc_attr( $class ),
+        esc_html( $initials ? $initials : '·' )
+    );
 }
 
 /**

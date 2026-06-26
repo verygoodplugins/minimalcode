@@ -50,9 +50,8 @@ get_header();
 				while ( have_posts() ) :
 					the_post();
 					$post_month  = get_the_date( 'F Y' );
-					$post_hash   = substr( md5( get_post_field( 'post_name', get_the_ID() ) ), 0, 6 );
 					$is_autojack = minimalcode_is_autojack();
-					$has_thumb   = has_post_thumbnail();
+					$entry_excerpt = wp_strip_all_tags( get_the_excerpt() );
 
 					if ( $post_month !== $current_month ) :
 						$current_month = $post_month;
@@ -64,13 +63,15 @@ get_header();
 						</div>
 					<?php endif; ?>
 
-					<a id="post-<?php the_ID(); ?>" <?php post_class( 'entry' . ( $has_thumb ? ' entry--has-thumb' : '' ) ); ?> href="<?php the_permalink(); ?>">
-						<?php if ( $has_thumb ) : ?>
-							<span class="entry-thumb"><?php the_post_thumbnail( 'medium', array( 'loading' => 'lazy', 'alt' => '' ) ); ?></span>
-						<?php endif; ?>
-						<span class="entry-hash"><?php echo esc_html( $post_hash ); ?></span>
+					<a id="post-<?php the_ID(); ?>" <?php post_class( 'entry' . ( $is_autojack ? ' entry--aj' : '' ) ); ?> href="<?php the_permalink(); ?>">
 						<span class="entry-date"><?php echo esc_html( strtoupper( get_the_date( 'M d' ) ) ); ?></span>
-						<span class="entry-title serif <?php echo $is_autojack ? 'aj' : ''; ?>"><?php the_title(); ?></span>
+						<span class="entry-author"><?php echo minimalcode_author_avatar( get_the_ID(), 32 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- helper escapes internally. ?></span>
+						<span class="entry-main">
+							<span class="entry-title serif"><?php the_title(); ?></span>
+							<?php if ( $entry_excerpt ) : ?>
+								<span class="entry-excerpt"><?php echo esc_html( $entry_excerpt ); ?></span>
+							<?php endif; ?>
+						</span>
 						<span class="entry-tags">
 							<?php if ( $is_autojack ) : ?>
 								<span class="tag aj">autojack</span>
