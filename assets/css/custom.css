@@ -1000,7 +1000,8 @@ pre code {
 [data-theme="dark"] .util-btn.hot,
 [data-theme="dark"] .np-comment-submit,
 [data-theme="dark"] .tag-cloud .tag:hover,
-[data-theme="dark"] .search-form-block .search-submit:hover {
+[data-theme="dark"] .search-form-block .search-submit:hover,
+[data-theme="dark"] .copy-code-button.copied {
   color: var(--paper);
 }
 
