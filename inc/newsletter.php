@@ -112,7 +112,13 @@ function minimalcode_newsletter_form( $context = 'aside' ) {
 	$flash    = minimalcode_newsletter_flash();
 	$id       = 'newsletter-' . sanitize_html_class( $context );
 	?>
-	<div class="newsletter-signup newsletter-signup--<?php echo esc_attr( $context ); ?>" data-newsletter-root>
+	<?php
+	$root_class = 'newsletter-signup newsletter-signup--' . sanitize_html_class( $context );
+	if ( '1' === $flash ) {
+		$root_class .= ' is-success';
+	}
+	?>
+	<div class="<?php echo esc_attr( $root_class ); ?>" data-newsletter-root>
 		<?php if ( '1' === $flash ) : ?>
 			<p class="newsletter-flash newsletter-flash--ok" role="status">
 				<?php esc_html_e( 'Check your inbox — confirm to finish subscribing.', 'minimalcode' ); ?>
@@ -123,6 +129,7 @@ function minimalcode_newsletter_form( $context = 'aside' ) {
 			</p>
 		<?php endif; ?>
 
+		<?php if ( '1' !== $flash ) : ?>
 		<form
 			class="newsletter-form"
 			action="<?php echo esc_url( $endpoint ); ?>"
@@ -165,13 +172,14 @@ function minimalcode_newsletter_form( $context = 'aside' ) {
 				<?php esc_html_e( 'Double opt-in. Reply to any issue and AutoJack answers.', 'minimalcode' ); ?>
 			</p>
 		</form>
+		<?php endif; ?>
 	</div>
 	<?php
 }
 
 /**
  * Append the mid-post signup after post content (same slot as the live Fluent snippet).
- * Skips if an ajn-box is already present so production Fluent + theme don't double up.
+ * Skips if a newsletter root is already present so production Fluent + theme don't double up.
  *
  * @param string $content Post HTML.
  * @return string
@@ -180,7 +188,8 @@ function minimalcode_append_newsletter_to_content( $content ) {
 	if ( is_admin() || ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() ) {
 		return $content;
 	}
-	if ( false !== strpos( $content, 'ajn-box' ) ) {
+	// Match real signup markup (class or data attr), not bare "ajn-box" in prose/code.
+	if ( preg_match( '/class=(["\'])[^"\']*\bajn-box\b[^"\']*\1|data-newsletter-root(?:=|\s|>)/', $content ) ) {
 		return $content;
 	}
 	ob_start();
