@@ -416,7 +416,9 @@
       const content = document.querySelector('.entry-content');
       if (!content) return;
 
-      const headings = content.querySelectorAll('h2, h3');
+      const headings = Array.from(content.querySelectorAll('h2, h3')).filter(
+        (heading) => !heading.closest('[data-newsletter-root]')
+      );
       if (headings.length === 0) {
         // Hide TOC sidebar if no headings
         const tocSidebar = document.querySelector('.post-toc-sidebar');
@@ -492,6 +494,99 @@
     }
   };
 
+  // AutoJack newsletter signup (posts to news.autojack.ai)
+  const NewsletterSignup = {
+    init() {
+      const cfg = window.minimalcodeNewsletter || {};
+      const endpoint = cfg.endpoint;
+      const messages = cfg.messages || {};
+      if (!endpoint) return;
+
+      document.querySelectorAll("[data-newsletter-form]").forEach((form) => {
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const root = form.closest("[data-newsletter-root]");
+          const status = root && root.querySelector("[data-newsletter-status]");
+          const emailInput = form.querySelector('input[name="email"]');
+          const honeypot = form.querySelector('input[name="company"]');
+          const email = emailInput ? emailInput.value.trim() : "";
+          const submit = form.querySelector('button[type="submit"]');
+
+          if (honeypot && honeypot.value) {
+            this.showSuccess(root, status, messages.pending);
+            return;
+          }
+
+          if (!email || !email.includes("@")) {
+            if (status)
+              status.textContent = messages.invalid || "Invalid email";
+            return;
+          }
+
+          if (submit) submit.disabled = true;
+          if (status) status.textContent = "Subscribing…";
+          try {
+            const res = await fetch(endpoint, {
+              method: "POST",
+              headers: {
+                "content-type": "application/json",
+                accept: "application/json",
+                "x-requested-with": "fetch",
+              },
+              body: JSON.stringify({
+                email,
+                company: honeypot ? honeypot.value : "",
+              }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || data.ok === false) {
+              if (status) {
+                status.textContent =
+                  data.error === "invalid_email"
+                    ? messages.invalid || "Invalid email"
+                    : messages.error || "Something went wrong";
+              }
+              return;
+            }
+            this.showSuccess(root, status, messages.pending);
+            if (window.history && window.history.replaceState) {
+              const url = new URL(window.location.href);
+              url.searchParams.set("newsletter", "1");
+              window.history.replaceState({}, "", url.toString());
+            }
+          } catch (err) {
+            if (status)
+              status.textContent = messages.error || "Something went wrong";
+          } finally {
+            if (submit) submit.disabled = false;
+          }
+        });
+      });
+    },
+
+    showSuccess(root, status, message) {
+      if (root) root.classList.add("is-success");
+      // Mid-post ajn-box keeps status in .ajn-status; footer uses a flash banner.
+      if (root && root.classList.contains("ajn-box")) {
+        if (status) {
+          status.textContent =
+            message || "Almost there — check your inbox and confirm.";
+        }
+        return;
+      }
+      if (root && !root.querySelector(".newsletter-flash--ok")) {
+        const flash = document.createElement("p");
+        flash.className = "newsletter-flash newsletter-flash--ok";
+        flash.setAttribute("role", "status");
+        flash.textContent = message || "Check your inbox.";
+        root.insertBefore(flash, root.firstChild);
+      }
+      if (status) {
+        status.textContent = message || "Check your inbox.";
+      }
+    },
+  };
+
   // Initialize everything when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
@@ -506,6 +601,7 @@
       }, 100);
 
       ReadingProgress.init();
+      NewsletterSignup.init();
     });
   } else {
     ThemeManager.init();
@@ -516,6 +612,7 @@
       CodeCopyButton.init();
     }, 100);
     ReadingProgress.init();
+    NewsletterSignup.init();
   }
 })();
 

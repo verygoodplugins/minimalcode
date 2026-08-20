@@ -48,6 +48,9 @@
                 </ul>
             </div>
         </div>
+        <div class="footer-newsletter">
+            <?php minimalcode_newsletter_form( 'footer' ); ?>
+        </div>
         <div class="footer-foot">
             <span><?php echo esc_html( get_bloginfo( 'name' ) ); ?> © <?php echo esc_html( date( 'Y' ) ); ?></span>
             <span class="colophon"><?php esc_html_e( 'Just another Wordprussite.', 'minimalcode' ); ?></span>

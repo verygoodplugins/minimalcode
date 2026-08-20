@@ -160,6 +160,9 @@ get_header();
 			</div>
 		</div>
 		<div class="aside-block">
+			<?php minimalcode_newsletter_form( 'aside' ); ?>
+		</div>
+		<div class="aside-block">
 			<div class="stamp">
 				BUILT IN<span class="big">PUBLIC</span>
 				since 2009
