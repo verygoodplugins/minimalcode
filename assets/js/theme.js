@@ -416,7 +416,9 @@
       const content = document.querySelector('.entry-content');
       if (!content) return;
 
-      const headings = content.querySelectorAll('h2, h3');
+      const headings = Array.from(content.querySelectorAll('h2, h3')).filter(
+        (heading) => !heading.closest('[data-newsletter-root]')
+      );
       if (headings.length === 0) {
         // Hide TOC sidebar if no headings
         const tocSidebar = document.querySelector('.post-toc-sidebar');
