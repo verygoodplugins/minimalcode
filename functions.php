@@ -18,6 +18,9 @@ require_once get_template_directory() . '/inc/icons.php';
 // Dev Pulse data fetch + cache + payload render helpers.
 require_once get_template_directory() . '/inc/dev-pulse.php';
 
+// AutoJack newsletter signup form helper.
+require_once get_template_directory() . '/inc/newsletter.php';
+
 /**
  * Theme setup
  */
@@ -94,6 +97,18 @@ function minimalcode_scripts() {
     // Theme behavior + live ⌘K search.
     // Depends on wp-api-fetch so the search modal can hit /wp/v2/search.
     wp_enqueue_script('minimalcode-theme', get_template_directory_uri() . '/assets/js/theme.js', array('wp-api-fetch'), filemtime(get_template_directory() . '/assets/js/theme.js'), true);
+    wp_localize_script(
+        'minimalcode-theme',
+        'minimalcodeNewsletter',
+        array(
+            'endpoint' => minimalcode_newsletter_endpoint(),
+            'messages' => array(
+            'pending' => __( 'Almost there — check your inbox and confirm. (New sender, so peek in spam.)', 'minimalcode' ),
+            'invalid' => __( 'That email looks off — mind checking it?', 'minimalcode' ),
+            'error'   => __( 'Hmm, that didn’t go through. Try again in a moment?', 'minimalcode' ),
+            ),
+        )
+    );
     
     // Comment reply script
     if (is_singular() && comments_open() && get_option('thread_comments')) {

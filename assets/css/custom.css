@@ -1104,3 +1104,162 @@ select:focus-visible,
   }
   .ticker-track { animation: none !important; padding-left: 0; }
 }
+/* AutoJack newsletter signup */
+.newsletter-signup {
+  margin-top: 0;
+}
+.newsletter-signup--footer {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  max-width: 520px;
+}
+.newsletter-label {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 10px;
+}
+.newsletter-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.newsletter-input {
+  flex: 1;
+  min-width: 0;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  padding: 10px 12px;
+}
+.newsletter-input:focus {
+  outline: 2px solid var(--hot);
+  outline-offset: 1px;
+}
+.newsletter-submit {
+  flex-shrink: 0;
+  border: 2px solid var(--ink) !important;
+  background: var(--hot) !important;
+  color: var(--ink) !important;
+  font-weight: 700;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.newsletter-hint {
+  margin: 8px 0 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--ink-mute);
+}
+.newsletter-flash {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  border: 1.5px solid var(--ink);
+}
+.newsletter-flash--ok {
+  background: var(--hot);
+  color: var(--ink);
+}
+.newsletter-flash--err {
+  background: var(--paper-dark);
+  color: var(--bleed);
+  border-color: var(--bleed);
+}
+.newsletter-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.newsletter-signup {
+  position: relative;
+}
+.newsletter-signup.is-success .newsletter-form {
+  display: none;
+}
+
+/* Mid-post AutoJack newsletter (ajn-box) — was Fluent Snippets on live */
+.ajn-box {
+  border: 1.5px solid var(--rule);
+  padding: 26px 24px;
+  margin: 44px 0 8px;
+  background: var(--paper-dark);
+  position: relative;
+}
+.ajn-title {
+  margin: 0 0 8px;
+  font-size: 1.45em;
+  line-height: 1.2;
+  color: var(--ink);
+  font-weight: 800;
+}
+.ajn-copy {
+  margin: 0 0 16px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  font-size: 0.98em;
+}
+.ajn-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+.ajn-input {
+  flex: 1 1 240px;
+  padding: 11px 13px;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+.ajn-input:focus {
+  outline: 2px solid var(--hot);
+  outline-offset: 1px;
+}
+.ajn-btn {
+  padding: 11px 22px;
+  border: 2px solid var(--ink);
+  background: var(--hot);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 1em;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.02em;
+}
+.ajn-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.ajn-status {
+  margin: 12px 0 0;
+  font-size: 0.82em;
+  color: var(--ink-mute);
+  font-family: "JetBrains Mono", monospace;
+  line-height: 1.45;
+}
+.ajn-box.is-success .ajn-form {
+  display: none;
+}
+[data-theme="dark"] .ajn-box {
+  background: var(--paper-dark);
+  border-color: var(--rule);
+}
+[data-theme="dark"] .ajn-btn {
+  background: var(--hot);
+  color: var(--ink);
+}
+
