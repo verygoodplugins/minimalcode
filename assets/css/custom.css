@@ -922,30 +922,142 @@ pre code {
 /* Page-article tweaks */
 .page-article .post-body { max-width: 64ch; }
 
-/* Comments — newspaper system */
+/* Comments — newspaper system.
+   The walker nests avatar + name inside .comment-meta > .comment-author, then
+   the time as a sibling. .comment-author is display:contents so those pieces
+   share .comment-meta's subgrid instead of the whole footer collapsing into
+   the 44px avatar track (which overlapped the note and wrapped the date). */
 .np-comments { margin: 56px 0 0; padding: 28px 0 0; border-top: 2px solid var(--rule); }
 .np-comments-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
 .np-comments-label { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--link); font-weight: 600; }
 .np-comments-title { font-family: "Fraunces", serif; font-weight: 700; font-size: 24px; color: var(--ink); margin: 0; line-height: 1.2; }
 .np-comments-title em { font-style: italic; color: var(--bleed); }
-.np-comment-list { list-style: none; padding: 0; margin: 0 0 28px; }
-.np-comment-list .comment { padding: 18px 0; border-bottom: 1px dashed var(--rule); }
-.np-comment-list .children { list-style: none; padding-left: 28px; margin: 14px 0 0; border-left: 2px solid var(--rule); }
-.np-comment-list .comment-body { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; }
-.np-comment-list .comment-author img { width: 44px; height: 44px; border: 1px solid var(--rule); display: block; grid-row: span 2; }
-.np-comment-list .comment-author .fn { font-family: "Fraunces", serif; font-weight: 700; font-size: 16px; color: var(--ink); font-style: normal; }
+.np-comment-list {
+  --comment-avatar: 44px;
+  --comment-gap: 14px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+}
+.np-comment-list > .comment { padding: 18px 0; border-bottom: 1px dashed var(--rule); }
+.np-comment-list .children {
+  list-style: none;
+  margin: 14px 0 0 calc(var(--comment-avatar) + var(--comment-gap));
+  padding: 0 0 2px 14px;
+  border-left: 1px solid var(--rule);
+}
+.np-comment-list .children .children { margin-left: 0; }
+.np-comment-list .children > .comment { padding: 12px 0 0; border-bottom: 0; }
+.np-comment-list .children > .comment + .comment { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--rule); }
+.np-comment-list .pingback,
+.np-comment-list .trackback { padding: 14px 0; border-bottom: 1px dashed var(--rule); font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-mute); }
+.np-comment-list .pingback p,
+.np-comment-list .trackback p { margin: 0; }
+.np-comment-list .comment-body {
+  display: grid;
+  grid-template-columns: var(--comment-avatar) minmax(0, 1fr);
+  column-gap: var(--comment-gap);
+  row-gap: 8px;
+  align-items: start;
+}
+.np-comment-list .comment-meta {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  row-gap: 2px;
+  align-items: center;
+}
+.np-comment-list .comment-author { display: contents; }
+.np-comment-list .comment-author img {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  width: var(--comment-avatar);
+  height: var(--comment-avatar);
+  border: 1px solid var(--rule);
+  display: block;
+  object-fit: cover;
+  align-self: start;
+}
+.np-comment-list .bypostauthor .comment-author img { border: 1.5px solid var(--ink); }
+.np-comment-list .comment-author .fn {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  min-width: 0;
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--ink);
+  font-style: normal;
+}
+.np-comment-list .comment-author .fn a { color: inherit; text-decoration: none; border-bottom: 0; }
+.np-comment-list .comment-author .fn a:hover { color: var(--link); }
 .np-comment-list .comment-author .says { display: none; }
-.np-comment-list .comment-metadata { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-mute); margin-top: 2px; }
-.np-comment-list .comment-metadata a { color: inherit; text-decoration: none; }
+.np-comment-list .comment-metadata {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  margin: 2px 0 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.np-comment-list .comment-metadata a { color: inherit; text-decoration: none; border-bottom: 0; }
 .np-comment-list .comment-metadata a:hover { color: var(--link); }
-.np-comment-list .comment-content { grid-column: 2; font-family: "Inter", sans-serif; font-size: 15px; line-height: 1.6; color: var(--ink-soft); margin-top: 6px; }
+.np-comment-list .comment-awaiting-moderation {
+  grid-column: 2;
+  margin: 4px 0 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-style: normal;
+  color: var(--bleed);
+}
+.np-comment-list .comment-content {
+  grid-column: 2;
+  min-width: 0;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  overflow-wrap: break-word;
+}
 .np-comment-list .comment-content p { margin: 0 0 0.6em; }
-.np-comment-list .reply { grid-column: 2; margin-top: 6px; }
-.np-comment-list .reply a { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute); text-decoration: none; }
+.np-comment-list .comment-content p:last-child { margin-bottom: 0; }
+.np-comment-list .comment-content pre { max-width: 100%; overflow-x: auto; }
+.np-comment-list .reply { grid-column: 2; margin: 0; }
+.np-comment-list .reply a { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute); text-decoration: none; border-bottom: 0; }
 .np-comment-list .reply a:hover { color: var(--link); }
+.np-comment-list .comment-respond { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--rule); }
+.np-comments .comment-navigation { margin: 0 0 28px; }
+.np-comments .comment-navigation .nav-links { display: flex; justify-content: space-between; gap: 12px; }
+.np-comments .comment-navigation a { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); text-decoration: none; border-bottom: 0; }
+.np-comments .comment-navigation a:hover { color: var(--link); }
 .np-comments-closed { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-mute); }
 .np-comments-reply { font-family: "Fraunces", serif; font-weight: 700; font-size: 22px; color: var(--ink); margin: 0 0 14px; }
-.np-comment-form { font-family: "Inter", sans-serif; }
+.np-comments-reply small { font-weight: 500; margin-left: 14px; white-space: nowrap; }
+.np-comments-reply #cancel-comment-reply-link { display: inline-block; vertical-align: 4px; font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute); text-decoration: none; border-bottom: 0; }
+.np-comments-reply #cancel-comment-reply-link:hover { color: var(--link); }
+.np-comment-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; font-family: "Inter", sans-serif; }
+.np-comment-list .np-comment-form { grid-template-columns: 1fr; }
+.np-comment-form p { margin: 0; }
+.np-comment-form .comment-notes,
+.np-comment-form .logged-in-as,
+.np-comment-form .must-log-in,
+.np-comment-form .comment-form-comment,
+.np-comment-form .comment-form-url,
+.np-comment-form .comment-form-cookies-consent,
+.np-comment-form .comment-form-comment-subscribe,
+.np-comment-form .form-submit { grid-column: 1 / -1; }
+.np-comment-form .comment-notes,
+.np-comment-form .logged-in-as,
+.np-comment-form .must-log-in { margin: 0 0 4px; font-size: 13px; line-height: 1.5; color: var(--ink-mute); }
+.np-comment-form .required { color: var(--bleed); }
 .np-comment-form label { display: block; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute); margin: 14px 0 6px; }
 .np-comment-form input[type="text"],
 .np-comment-form input[type="email"],
@@ -957,8 +1069,13 @@ pre code {
 .np-comment-form .form-submit { margin-top: 18px; }
 .np-comment-submit { font-family: "JetBrains Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 18px; background: var(--hot); color: var(--ink); border: 1.5px solid var(--ink); cursor: pointer; }
 .np-comment-submit:hover { background: var(--ink); color: var(--hot); }
-.np-comment-form .comment-form-cookies-consent { font-size: 12px; color: var(--ink-mute); }
-.np-comment-form .comment-form-cookies-consent label { display: inline; font-family: "Inter", sans-serif; font-size: 12px; text-transform: none; letter-spacing: 0; }
+.np-comment-form .comment-form-cookies-consent { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; color: var(--ink-soft); }
+.np-comment-form .comment-form-comment-subscribe { margin-top: 8px; }
+.np-comment-form .comment-form-cookies-consent label,
+.np-comment-form .comment-form-comment-subscribe label { display: inline; margin: 0; font-family: "Inter", sans-serif; font-size: 13px; font-weight: 400; line-height: 1.45; letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
+.np-comment-form .comment-form-comment-subscribe label { display: flex; align-items: flex-start; gap: 8px; }
+.np-comment-form .comment-form-cookies-consent input,
+.np-comment-form .comment-form-comment-subscribe input { flex: none; width: auto; margin: 3px 0 0; accent-color: var(--ink); }
 
 /* Post navigation — under single posts */
 .post-navigation { margin: 48px 0 0; padding: 28px 0 0; border-top: 2px solid var(--rule); }
@@ -1072,6 +1189,9 @@ pre code {
   .proj-grid { grid-template-columns: 1fr; gap: 18px; }
   .post-navigation .nav-links { grid-template-columns: 1fr; }
   .post-navigation .nav-next { text-align: left; }
+  .np-comment-list { --comment-avatar: 36px; --comment-gap: 10px; }
+  .np-comment-list .children { margin-left: 0; padding-left: 12px; }
+  .np-comment-form { grid-template-columns: 1fr; }
 }
 
 /* ==========================================================================
@@ -1189,77 +1309,121 @@ select:focus-visible,
   display: none;
 }
 
-/* Mid-post AutoJack newsletter (ajn-box) — was Fluent Snippets on live */
-.ajn-box {
+/* Mid-post AutoJack newsletter.
+   Scoped under .post-body so this beats both the prose h3/p margins and the
+   leftover #ajn-styles snippet (gray card, blue button) that still prints later. */
+.post-body .ajn-box {
   border: 1.5px solid var(--rule);
-  padding: 26px 24px;
+  border-radius: 0;
+  padding: 22px 22px 18px;
   margin: 44px 0 8px;
   background: var(--paper-dark);
+  color: var(--ink);
   position: relative;
 }
-.ajn-title {
-  margin: 0 0 8px;
-  font-size: 1.45em;
+.post-body .ajn-box .ajn-title {
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  font-family: "Fraunces", serif;
+  font-size: 26px;
+  font-weight: 700;
   line-height: 1.2;
+  letter-spacing: 0;
   color: var(--ink);
-  font-weight: 800;
 }
-.ajn-copy {
+.post-body .ajn-box .ajn-copy {
   margin: 0 0 16px;
-  line-height: 1.6;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
   color: var(--ink-soft);
-  font-size: 0.98em;
+  opacity: 1;
 }
-.ajn-form {
+.post-body .ajn-box .ajn-copy strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.post-body .ajn-box .ajn-form {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: stretch;
 }
-.ajn-input {
-  flex: 1 1 240px;
-  padding: 11px 13px;
+.post-body .ajn-box .ajn-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 10px 12px;
   border: 1.5px solid var(--ink);
+  border-radius: 0;
   background: var(--paper);
   color: var(--ink);
-  font: inherit;
+  font-family: "Inter", sans-serif;
   font-size: 15px;
+  line-height: 1.4;
+  opacity: 1;
 }
-.ajn-input:focus {
+.post-body .ajn-box .ajn-input::placeholder {
+  color: var(--ink-mute);
+  opacity: 1;
+}
+.post-body .ajn-box .ajn-input:focus {
   outline: 2px solid var(--hot);
   outline-offset: 1px;
 }
-.ajn-btn {
-  padding: 11px 22px;
-  border: 2px solid var(--ink);
+.post-body .ajn-box .ajn-btn {
+  flex: 0 0 auto;
+  padding: 10px 18px;
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
   background: var(--hot);
   color: var(--ink);
-  font-weight: 700;
-  font-size: 1em;
-  cursor: pointer;
   font-family: "JetBrains Mono", monospace;
-  letter-spacing: 0.02em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  cursor: pointer;
 }
-.ajn-btn:disabled {
+.post-body .ajn-box .ajn-btn:hover {
+  background: var(--ink);
+  color: var(--hot);
+  border-color: var(--ink);
+}
+.post-body .ajn-box .ajn-btn:disabled {
   opacity: 0.6;
   cursor: default;
 }
-.ajn-status {
-  margin: 12px 0 0;
-  font-size: 0.82em;
-  color: var(--ink-mute);
+.post-body .ajn-box .ajn-status {
+  margin: 10px 0 0;
   font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
   line-height: 1.45;
+  color: var(--ink-mute);
+  opacity: 1;
 }
-.ajn-box.is-success .ajn-form {
+.post-body .ajn-box.is-success .ajn-form {
   display: none;
 }
-[data-theme="dark"] .ajn-box {
+[data-theme="dark"] .post-body .ajn-box {
   background: var(--paper-dark);
   border-color: var(--rule);
 }
-[data-theme="dark"] .ajn-btn {
+[data-theme="dark"] .post-body .ajn-box .ajn-btn {
   background: var(--hot);
-  color: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+[data-theme="dark"] .post-body .ajn-box .ajn-btn:hover {
+  background: var(--paper);
+  color: var(--hot);
+  border-color: var(--hot);
+}
+@media (max-width: 760px) {
+  .post-body .ajn-box .ajn-input,
+  .post-body .ajn-box .ajn-btn {
+    flex: 1 1 100%;
+  }
 }
 
