@@ -21,6 +21,9 @@ require_once get_template_directory() . '/inc/dev-pulse.php';
 // AutoJack newsletter signup form helper.
 require_once get_template_directory() . '/inc/newsletter.php';
 
+// Comment webhook to the AutoJack hub (inert without wp-config constants).
+require_once get_template_directory() . '/inc/comment-webhook.php';
+
 /**
  * Theme setup
  */

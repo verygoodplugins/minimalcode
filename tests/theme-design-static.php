@@ -13,7 +13,8 @@ $checks = array(
 	'index.php'             => array( 'layout wrap', 'lede', 'entry-author', 'entry-excerpt', 'month-rule' ),
 	'single.php'            => array( 'single wrap', 'post-meta-rail', 'post-headline', 'aj-banner' ),
 	'assets/css/custom.css' => array( '--paper', '--hot', '.ticker', '.masthead', '.entry-author', '.newsletter-signup' ),
-	'inc/newsletter.php'    => array( 'minimalcode_newsletter_form', 'ajn-box', 'news.autojack.ai', 'Get AutoJack in your inbox' ),
+	'inc/newsletter.php'      => array( 'minimalcode_newsletter_form', 'ajn-box', 'news.autojack.ai', 'Get AutoJack in your inbox' ),
+	'inc/comment-webhook.php' => array( 'minimalcode_comment_webhook_delivered', 'minimalcode_autojack_user_id', 'minimalcode_is_autojack' ),
 );
 
 $forbidden_css = array(
