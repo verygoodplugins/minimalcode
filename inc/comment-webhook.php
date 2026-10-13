@@ -52,12 +52,13 @@ function minimalcode_comment_webhook_eligible( $comment ) {
 		return false;
 	}
 
-	$autojack = get_user_by( 'slug', 'autojack' );
-	if ( $autojack ) {
-		if ( (int) $comment->user_id === (int) $autojack->ID ) {
+	$autojack_id = minimalcode_autojack_user_id();
+	if ( $autojack_id ) {
+		if ( (int) $comment->user_id === $autojack_id ) {
 			return false;
 		}
-		if ( 0 === strcasecmp( (string) $comment->comment_author_email, (string) $autojack->user_email ) ) {
+		$autojack = get_user_by( 'id', $autojack_id );
+		if ( $autojack && 0 === strcasecmp( (string) $comment->comment_author_email, (string) $autojack->user_email ) ) {
 			return false;
 		}
 	}
@@ -231,8 +232,7 @@ function minimalcode_comment_webhook_post_text( $html ) {
  * @return array[]
  */
 function minimalcode_comment_webhook_thread( $post_id ) {
-	$autojack    = get_user_by( 'slug', 'autojack' );
-	$autojack_id = $autojack ? (int) $autojack->ID : 0;
+	$autojack_id = minimalcode_autojack_user_id();
 	$comments    = get_comments(
 		array(
 			'post_id' => (int) $post_id,
