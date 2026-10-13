@@ -48,7 +48,7 @@ function minimalcode_comment_webhook_eligible( $comment ) {
 	if ( '1' !== (string) $comment->comment_approved ) {
 		return false;
 	}
-	if ( ! in_category( 'autojack', (int) $comment->comment_post_ID ) ) {
+	if ( ! minimalcode_is_autojack( (int) $comment->comment_post_ID ) ) {
 		return false;
 	}
 
