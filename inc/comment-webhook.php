@@ -79,12 +79,40 @@ function minimalcode_comment_webhook_queue( $comment_id ) {
 	if ( ! minimalcode_comment_webhook_eligible( $comment ) ) {
 		return;
 	}
-	$key = 'minimalcode_cwh_' . (int) $comment->comment_ID;
+	$key = minimalcode_comment_webhook_sent_key( $comment->comment_ID );
 	if ( get_transient( $key ) ) {
 		return;
 	}
+	// Hold the slot so the submit hook and the approval hook cannot both send.
+	// A failed delivery deletes this and schedules a retry.
 	set_transient( $key, 1, HOUR_IN_SECONDS );
 	$GLOBALS['minimalcode_comment_webhook_queue'][] = (int) $comment->comment_ID;
+}
+
+/**
+ * Transient that means this comment was handed to the hub.
+ *
+ * @param int $comment_id Comment ID.
+ * @return string
+ */
+function minimalcode_comment_webhook_sent_key( $comment_id ) {
+	return 'minimalcode_cwh_' . (int) $comment_id;
+}
+
+/**
+ * Whether the hub accepted the delivery.
+ *
+ * wp_remote_post() returns an array for HTTP 4xx/5xx, not a WP_Error.
+ *
+ * @param array|WP_Error|false $response Response from wp_remote_post().
+ * @return bool
+ */
+function minimalcode_comment_webhook_delivered( $response ) {
+	if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+		return false;
+	}
+	$code = (int) wp_remote_retrieve_response_code( $response );
+	return $code >= 200 && $code < 300;
 }
 
 /**
@@ -310,9 +338,77 @@ function minimalcode_comment_webhook_flush() {
 	}
 	foreach ( $queue as $comment_id ) {
 		$response = minimalcode_comment_webhook_send( $comment_id );
-		if ( is_wp_error( $response ) ) {
-			error_log( 'minimalcode comment webhook failed for comment ' . $comment_id . ': ' . $response->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		if ( minimalcode_comment_webhook_delivered( $response ) ) {
+			continue;
 		}
+		minimalcode_comment_webhook_record_failure( $comment_id, $response );
 	}
 }
 add_action( 'shutdown', 'minimalcode_comment_webhook_flush' );
+
+/**
+ * Short description of a failed delivery, without the payload or secret.
+ *
+ * @param array|WP_Error|false $response Response from wp_remote_post().
+ * @return string
+ */
+function minimalcode_comment_webhook_failure_message( $response ) {
+	if ( is_wp_error( $response ) ) {
+		return $response->get_error_message();
+	}
+	if ( is_array( $response ) ) {
+		return 'HTTP ' . (int) wp_remote_retrieve_response_code( $response );
+	}
+	return 'no response';
+}
+
+/**
+ * Drop the sent lock and try again, up to three attempts.
+ *
+ * @param int                  $comment_id Comment ID.
+ * @param array|WP_Error|false $response   Failed response.
+ * @return void
+ */
+function minimalcode_comment_webhook_record_failure( $comment_id, $response ) {
+	$comment_id = (int) $comment_id;
+	delete_transient( minimalcode_comment_webhook_sent_key( $comment_id ) );
+
+	$attempt_key = 'minimalcode_cwh_try_' . $comment_id;
+	$attempts    = (int) get_option( $attempt_key, 0 ) + 1;
+	update_option( $attempt_key, $attempts, false );
+
+	error_log( 'minimalcode comment webhook failed for comment ' . $comment_id . ' (attempt ' . $attempts . '): ' . minimalcode_comment_webhook_failure_message( $response ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+
+	if ( $attempts >= 3 ) {
+		delete_option( $attempt_key );
+		return;
+	}
+
+	$args = array( $comment_id );
+	if ( ! wp_next_scheduled( 'minimalcode_comment_webhook_retry', $args ) ) {
+		wp_schedule_single_event( time() + ( 5 * MINUTE_IN_SECONDS * $attempts ), 'minimalcode_comment_webhook_retry', $args );
+	}
+}
+
+/**
+ * Cron retry for a delivery that did not get a 2xx.
+ *
+ * @param int $comment_id Comment ID.
+ * @return void
+ */
+function minimalcode_comment_webhook_retry( $comment_id ) {
+	$comment_id = (int) $comment_id;
+	if ( get_transient( minimalcode_comment_webhook_sent_key( $comment_id ) ) ) {
+		return;
+	}
+
+	$response = minimalcode_comment_webhook_send( $comment_id );
+	if ( minimalcode_comment_webhook_delivered( $response ) ) {
+		set_transient( minimalcode_comment_webhook_sent_key( $comment_id ), 1, HOUR_IN_SECONDS );
+		delete_option( 'minimalcode_cwh_try_' . $comment_id );
+		return;
+	}
+
+	minimalcode_comment_webhook_record_failure( $comment_id, $response );
+}
+add_action( 'minimalcode_comment_webhook_retry', 'minimalcode_comment_webhook_retry' );
