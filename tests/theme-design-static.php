@@ -13,7 +13,10 @@ $checks = array(
 	'index.php'             => array( 'layout wrap', 'lede', 'entry-author', 'entry-excerpt', 'month-rule' ),
 	'single.php'            => array( 'single wrap', 'post-meta-rail', 'post-headline', 'aj-banner' ),
 	'assets/css/custom.css' => array( '--paper', '--hot', '.ticker', '.masthead', '.entry-author', '.newsletter-signup' ),
-	'inc/newsletter.php'      => array( 'minimalcode_newsletter_form', 'ajn-box', 'news.autojack.ai', 'Get AutoJack in your inbox' ),
+	'inc/newsletter.php'        => array( 'minimalcode_newsletter_form', 'ajn-box', 'news.autojack.ai', 'Get AutoJack in your inbox' ),
+	'inc/newsletter-digest.php' => array( "'enabled' => false", 'List-Unsubscribe', 'minimalcode_newsletter_plan', 'Automatic weekly send is off' ),
+	'inc/newsletter-weekly.php' => array( 'wp_schedule_single_event', 'minimalcode_newsletter_on_weekly', 'MINIMALCODE_RESEND_API_KEY', 'minimalcode_newsletter_ci_blocked' ),
+	'functions.php'             => array( 'newsletter-weekly.php' ),
 	'inc/comment-webhook.php' => array( 'minimalcode_comment_webhook_delivered', 'minimalcode_autojack_user_id', 'minimalcode_is_autojack' ),
 );
 

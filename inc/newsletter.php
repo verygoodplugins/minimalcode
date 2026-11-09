@@ -2,6 +2,11 @@
 /**
  * AutoJack newsletter signup form (posts to news.autojack.ai Worker).
  *
+ * The Worker (Cloudflare `autojack-newsletter`, Very Good Plugins account)
+ * stores contacts in a Resend audience and sends the confirm + welcome mail.
+ * Weekly issues are composed and sent by inc/newsletter-weekly.php. Automatic
+ * sending is off until Settings → Newsletter enables it.
+ *
  * Live previously injected the mid-post box via Fluent Snippets (ajn-box).
  * That plugin is not on local — the theme now owns the markup.
  *
