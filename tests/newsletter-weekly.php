@@ -279,6 +279,56 @@ $unsafe = minimalcode_newsletter_message(
 minimalcode_newsletter_assert( array() === $unsafe['headers'], 'javascript unsubscribe url produced a header' );
 minimalcode_newsletter_assert( ! str_contains( $unsafe['html'], 'javascript:' ), 'javascript url was rendered' );
 
+// A later batch re-reads the list: anyone no longer confirmed is skipped.
+$recheck = minimalcode_newsletter_recheck_batch(
+	array( 'Stays@Example.com', 'left@example.com', 'gone@example.com' ),
+	array(
+		array(
+			'email'        => 'stays@example.com',
+			'unsubscribed' => false,
+		),
+		array(
+			'email'        => 'left@example.com',
+			'unsubscribed' => true,
+		),
+	)
+);
+minimalcode_newsletter_assert( array( 'stays@example.com' ) === $recheck['send'], 'recheck should keep only confirmed, got ' . implode( ',', $recheck['send'] ) );
+minimalcode_newsletter_assert( array( 'left@example.com', 'gone@example.com' ) === $recheck['skipped'], 'recheck should skip unsubscribed and removed contacts' );
+$empty_recheck = minimalcode_newsletter_recheck_batch( array( 'a@example.com' ), array() );
+minimalcode_newsletter_assert( array() === $empty_recheck['send'], 'an empty fresh list sends to nobody (fail closed)' );
+
+// One issue in flight at a time.
+minimalcode_newsletter_assert( '' === minimalcode_newsletter_busy_week( false, '2026-11-09' ), 'no active state is not busy' );
+minimalcode_newsletter_assert(
+	'2026-11-02' === minimalcode_newsletter_busy_week(
+		array(
+			'week_id'  => '2026-11-02',
+			'finished' => false,
+		),
+		'2026-11-09'
+	),
+	'another unfinished week is busy'
+);
+minimalcode_newsletter_assert(
+	'' === minimalcode_newsletter_busy_week(
+		array(
+			'week_id'  => '2026-11-02',
+			'finished' => true,
+		),
+		'2026-11-09'
+	),
+	'a finished week is not busy'
+);
+minimalcode_newsletter_assert( '' === minimalcode_newsletter_busy_week( array( 'week_id' => '2026-11-09' ), '2026-11-09' ), 'the same week is left to the claim check' );
+
+// A fixed issue time gives the same token, so a retry under one idempotency
+// key resends an identical payload.
+minimalcode_newsletter_assert(
+	minimalcode_newsletter_sign_token( 'reader@example.com', $secret, 31536000, 1763337600 ) === minimalcode_newsletter_sign_token( 'reader@example.com', $secret, 31536000, 1763337600 ),
+	'token must be deterministic for a fixed issue time'
+);
+
 if ( $failures ) {
 	fwrite( STDERR, implode( PHP_EOL, $failures ) . PHP_EOL );
 	exit( 1 );

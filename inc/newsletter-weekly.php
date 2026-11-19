@@ -15,9 +15,18 @@
  *
  *     define( 'MINIMALCODE_RESEND_API_KEY', '...' );
  *     define( 'MINIMALCODE_NEWSLETTER_AUDIENCE_ID', '...' ); // worker NEWSLETTER_AUDIENCE_ID
- *     define( 'MINIMALCODE_NEWSLETTER_CONFIRM_SECRET', '...' ); // worker NEWSLETTER_CONFIRM_SECRET
+ *     define( 'MINIMALCODE_NEWSLETTER_CONFIRM_SECRET', '...' ); // any random 16+ chars, see below
  *     define( 'MINIMALCODE_NEWSLETTER_FROM', 'AutoJack <newsletter@news.autojack.ai>' ); // optional
+ *     define( 'MINIMALCODE_NEWSLETTER_REPLY_TO', 'hey@autojack.ai' ); // optional, this is the default
  *     define( 'MINIMALCODE_NEWSLETTER_SEGMENT_ID', '...' ); // optional, only if the audience id was migrated
+ *
+ * The confirm secret signs the weekly issue's unsubscribe links, and this site
+ * verifies them at /newsletter/unsubscribe/. Welcome-mail links go to the
+ * worker and are verified there. Nothing crosses over, so the secret does not
+ * have to match the worker's NEWSLETTER_CONFIRM_SECRET (reusing it is fine).
+ *
+ * news.autojack.ai has no MX record, so replies go to hey@autojack.ai, the
+ * AutoJack inbox, instead of bouncing.
  *
  * Automatic sending is OFF until Settings → Newsletter enables it. Enabling
  * does not mail the list immediately; the first automatic run is the next
@@ -123,6 +132,20 @@ function minimalcode_newsletter_from() {
 		$from = MINIMALCODE_NEWSLETTER_FROM;
 	}
 	return (string) apply_filters( 'minimalcode_newsletter_from', $from );
+}
+
+/**
+ * Where replies go. The issue asks readers to reply, and the From domain
+ * cannot receive mail.
+ *
+ * @return string Empty to send without Reply-To.
+ */
+function minimalcode_newsletter_reply_to() {
+	$reply = 'hey@autojack.ai';
+	if ( defined( 'MINIMALCODE_NEWSLETTER_REPLY_TO' ) && is_string( MINIMALCODE_NEWSLETTER_REPLY_TO ) ) {
+		$reply = MINIMALCODE_NEWSLETTER_REPLY_TO;
+	}
+	return trim( (string) apply_filters( 'minimalcode_newsletter_reply_to', $reply ) );
 }
 
 /**
@@ -548,14 +571,18 @@ function minimalcode_newsletter_mark_unsubscribed( $email ) {
 }
 
 /**
- * @param string $email Recipient.
+ * @param string   $email Recipient.
+ * @param int|null $issued_at Sign time. A real issue passes its start time so a
+ *                            retry under the same idempotency key sends an
+ *                            identical payload (Resend rejects a changed one).
  * @return string
  */
-function minimalcode_newsletter_unsubscribe_url( $email ) {
+function minimalcode_newsletter_unsubscribe_url( $email, $issued_at = null ) {
 	if ( ! defined( 'MINIMALCODE_NEWSLETTER_CONFIRM_SECRET' ) ) {
 		return '';
 	}
-	$token = minimalcode_newsletter_sign_token( $email, MINIMALCODE_NEWSLETTER_CONFIRM_SECRET, 365 * DAY_IN_SECONDS, time() );
+	$now   = null === $issued_at ? time() : (int) $issued_at;
+	$token = minimalcode_newsletter_sign_token( $email, MINIMALCODE_NEWSLETTER_CONFIRM_SECRET, 365 * DAY_IN_SECONDS, $now );
 	if ( '' === $token ) {
 		return '';
 	}
@@ -568,7 +595,7 @@ function minimalcode_newsletter_unsubscribe_url( $email ) {
  * @return array{ok: bool, error: string}
  */
 function minimalcode_newsletter_deliver_one( array $state, $email ) {
-	$url = minimalcode_newsletter_unsubscribe_url( $email );
+	$url = minimalcode_newsletter_unsubscribe_url( $email, isset( $state['issued_at'] ) ? (int) $state['issued_at'] : null );
 	if ( '' === $url ) {
 		return array(
 			'ok'    => false,
@@ -598,17 +625,22 @@ function minimalcode_newsletter_deliver_one( array $state, $email ) {
 		? 'test/' . gmdate( 'YmdHis' ) . '/' . bin2hex( random_bytes( 4 ) )
 		: minimalcode_newsletter_idempotency_key( (string) $state['week_id'], $email );
 
+	$payload = array(
+		'from'    => minimalcode_newsletter_from(),
+		'to'      => array( $email ),
+		'subject' => $message['subject'],
+		'html'    => $message['html'],
+		'text'    => $message['text'],
+		'headers' => $message['headers'],
+	);
+	$reply_to = minimalcode_newsletter_reply_to();
+	if ( '' !== $reply_to ) {
+		$payload['reply_to'] = $reply_to;
+	}
 	$res = minimalcode_newsletter_resend(
 		'POST',
 		'/emails',
-		array(
-			'from'    => minimalcode_newsletter_from(),
-			'to'      => array( $email ),
-			'subject' => $message['subject'],
-			'html'    => $message['html'],
-			'text'    => $message['text'],
-			'headers' => $message['headers'],
-		),
+		$payload,
 		array(
 			'Idempotency-Key' => $idem,
 		)
@@ -696,6 +728,7 @@ function minimalcode_newsletter_finish( array $state, $override_status = '' ) {
 			'post_ids'        => isset( $state['post_ids'] ) ? array_values( (array) $state['post_ids'] ) : array(),
 			'recipient_count' => isset( $state['recipients'] ) ? count( (array) $state['recipients'] ) : 0,
 			'sent_count'      => $sent,
+			'skipped_count'   => (int) ( $state['skipped'] ?? 0 ),
 			'failure_count'   => count( $failures ),
 			'failures'        => $failures,
 			'status'          => $status,
@@ -737,7 +770,38 @@ function minimalcode_newsletter_process_batch( $week_id ) {
 	$slice      = array_slice( $recipients, $offset, minimalcode_newsletter_batch_size() );
 	$delay      = minimalcode_newsletter_send_delay_us();
 
+	// The list was read when this issue started. A later batch re-reads it so
+	// a reader who unsubscribed in the meantime is not mailed.
+	$skip = array();
+	if ( time() - (int) ( $state['listed_at'] ?? 0 ) > 30 ) {
+		$fresh = minimalcode_newsletter_fetch_subscribers();
+		if ( is_wp_error( $fresh ) ) {
+			$state['recheck_failures'] = (int) ( $state['recheck_failures'] ?? 0 ) + 1;
+			if ( $state['recheck_failures'] >= 30 ) {
+				$state['failures'][] = array(
+					'email' => '',
+					'error' => 'Stopped: could not re-read the list. ' . $fresh->get_error_message(),
+				);
+				minimalcode_newsletter_finish( $state );
+				return;
+			}
+			$state['lock'] = 0;
+			update_option( 'minimalcode_newsletter_active', $state, false );
+			minimalcode_newsletter_schedule_single( time() + 120, 'minimalcode_newsletter_batch', array( $week_id ) );
+			return;
+		}
+		$state['listed_at']        = time();
+		$state['recheck_failures'] = 0;
+		$skip                      = array_flip( minimalcode_newsletter_recheck_batch( $slice, $fresh )['skipped'] );
+	}
+
 	foreach ( $slice as $index => $email ) {
+		if ( isset( $skip[ strtolower( trim( (string) $email ) ) ] ) ) {
+			$state['skipped'] = (int) ( $state['skipped'] ?? 0 ) + 1;
+			$state['offset']++;
+			update_option( 'minimalcode_newsletter_active', $state, false );
+			continue;
+		}
 		$result = minimalcode_newsletter_deliver_one( $state, $email );
 		if ( ! $result['ok'] && str_contains( $result['error'], 'HTTP 429' ) ) {
 			$state['lock'] = 0;
@@ -863,6 +927,13 @@ function minimalcode_newsletter_begin( $trigger, $test_email = '' ) {
 		return new WP_Error( $pre['action'], $pre['reason'] );
 	}
 
+	// One issue in flight at a time. A cron run that hits this is retried by
+	// the catch-up in ensure_schedule once the earlier week finishes.
+	$busy = minimalcode_newsletter_busy_week( get_option( 'minimalcode_newsletter_active' ), $pre['week_id'] );
+	if ( '' !== $busy ) {
+		return new WP_Error( 'skip_busy', 'The issue for the week of ' . $busy . ' is still sending. Try again once it finishes.' );
+	}
+
 	$fetched = minimalcode_newsletter_fetch_subscribers();
 	if ( is_wp_error( $fetched ) ) {
 		if ( ! minimalcode_newsletter_already_logged( $pre['week_id'], 'failed_fetch' ) ) {
@@ -928,9 +999,12 @@ function minimalcode_newsletter_begin( $trigger, $test_email = '' ) {
 		'recipients'  => $plan['recipients'],
 		'offset'      => 0,
 		'sent'        => 0,
+		'skipped'     => 0,
 		'failures'    => array(),
 		'trigger'     => $trigger,
 		'started_at'  => gmdate( 'c' ),
+		'issued_at'   => time(),
+		'listed_at'   => time(),
 		'lock'        => 0,
 		'finished'    => false,
 		'test'        => false,
@@ -1013,7 +1087,7 @@ function minimalcode_newsletter_skip_canonical( $redirect_url ) {
 add_filter( 'redirect_canonical', 'minimalcode_newsletter_skip_canonical' );
 
 /**
- * GET shows a confirmation page. POST is the one-click List-Unsubscribe action.
+ * GET unsubscribes and shows a page. POST is the one-click List-Unsubscribe action.
  *
  * @return void
  */
@@ -1022,6 +1096,11 @@ function minimalcode_newsletter_maybe_unsubscribe() {
 		return;
 	}
 
+	// Page caches (WP Rocket in production) must never store this response,
+	// or a cached hit would skip the unsubscribe.
+	if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+		define( 'DONOTCACHEPAGE', true );
+	}
 	nocache_headers();
 	header( 'Referrer-Policy: no-referrer' );
 	header( 'X-Robots-Tag: noindex, nofollow' );

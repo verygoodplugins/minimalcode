@@ -357,6 +357,53 @@ function minimalcode_newsletter_confirmed_subscribers( array $contacts ) {
 }
 
 /**
+ * Split a queued batch into addresses that are still confirmed and ones to skip.
+ *
+ * Batches run minutes apart. A reader can unsubscribe in between, from this
+ * issue's link or the worker's welcome mail; both flip the Resend contact, so
+ * a later batch re-reads the list and only mails addresses still confirmed.
+ *
+ * @param string[] $slice    Queued addresses.
+ * @param array    $contacts Fresh Resend contact rows.
+ * @return array{send: string[], skipped: string[]}
+ */
+function minimalcode_newsletter_recheck_batch( array $slice, array $contacts ) {
+	$confirmed = array_flip( minimalcode_newsletter_confirmed_subscribers( $contacts ) );
+	$out       = array(
+		'send'    => array(),
+		'skipped' => array(),
+	);
+	foreach ( $slice as $email ) {
+		$email = strtolower( trim( (string) $email ) );
+		if ( isset( $confirmed[ $email ] ) ) {
+			$out['send'][] = $email;
+		} else {
+			$out['skipped'][] = $email;
+		}
+	}
+	return $out;
+}
+
+/**
+ * Week id of another issue that still has queued batches, or ''.
+ *
+ * Only one issue can be in flight. Starting a second one would replace the
+ * stored state, strand the first week's remaining readers, and leave its
+ * claim stuck on "sending".
+ *
+ * @param mixed  $active  Stored minimalcode_newsletter_active option.
+ * @param string $week_id Week about to start.
+ * @return string
+ */
+function minimalcode_newsletter_busy_week( $active, $week_id ) {
+	if ( ! is_array( $active ) || ! empty( $active['finished'] ) ) {
+		return '';
+	}
+	$busy = (string) ( $active['week_id'] ?? '' );
+	return ( '' !== $busy && $busy !== (string) $week_id ) ? $busy : '';
+}
+
+/**
  * @param string[] $emails Emails.
  * @param int      $size Batch size.
  * @return array<int, string[]>
