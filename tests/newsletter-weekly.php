@@ -322,6 +322,25 @@ minimalcode_newsletter_assert(
 );
 minimalcode_newsletter_assert( '' === minimalcode_newsletter_busy_week( array( 'week_id' => '2026-11-09' ), '2026-11-09' ), 'the same week is left to the claim check' );
 
+// A late cron run stays on the week its slot was for.
+$late   = new DateTimeImmutable( '2026-11-16 00:05:00', $berlin );
+$sunday_slot = minimalcode_newsletter_scheduled_week( $late, $berlin, 7, 23, 55 );
+minimalcode_newsletter_assert( '2026-11-02' === $sunday_slot['week_id'], 'Sunday 23:55 slot run at Monday 00:05 keeps its week, got ' . $sunday_slot['week_id'] );
+$on_time = minimalcode_newsletter_scheduled_week( new DateTimeImmutable( '2026-11-15 23:55:30', $berlin ), $berlin, 7, 23, 55 );
+minimalcode_newsletter_assert( $on_time['week_id'] === $sunday_slot['week_id'], 'on-time and late Sunday runs agree on the week' );
+$default_late = minimalcode_newsletter_scheduled_week( new DateTimeImmutable( '2026-11-20 14:00:00', $berlin ), $berlin, 1, 8, 0 );
+minimalcode_newsletter_assert( '2026-11-09' === $default_late['week_id'], 'Monday 08:00 slot run days late keeps its week, got ' . $default_late['week_id'] );
+$default_on_time = minimalcode_newsletter_scheduled_week( new DateTimeImmutable( '2026-11-16 08:00:00', $berlin ), $berlin, 1, 8, 0 );
+minimalcode_newsletter_assert( '2026-11-09' === $default_on_time['week_id'], 'Monday 08:00 run at the slot sends the week just ended, got ' . $default_on_time['week_id'] );
+$plan_anchor = minimalcode_newsletter_plan(
+	array(
+		'trigger'  => 'manual',
+		'timezone' => $berlin,
+		'now'      => $sunday_slot['end']->modify( '+1 second' ),
+	)
+);
+minimalcode_newsletter_assert( $sunday_slot['week_id'] === $plan_anchor['week_id'], 'planner anchored at week end + 1s picks the same week, got ' . $plan_anchor['week_id'] );
+
 // A fixed issue time gives the same token, so a retry under one idempotency
 // key resends an identical payload.
 minimalcode_newsletter_assert(

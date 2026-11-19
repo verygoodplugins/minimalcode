@@ -283,6 +283,25 @@ function minimalcode_newsletter_next_slot( DateTimeImmutable $now, DateTimeZone 
 }
 
 /**
+ * Issue week for a scheduled run, anchored to the slot rather than the clock.
+ *
+ * WP-Cron fires late when traffic is quiet. Anchoring to the most recent slot
+ * keeps a Sunday 23:55 run that executes at Monday 00:05 on the week it was
+ * meant for, instead of skipping it and sending the next week early.
+ *
+ * @param DateTimeImmutable $now Instant the run executes.
+ * @param DateTimeZone      $tz Site timezone.
+ * @param int               $weekday 1–7.
+ * @param int               $hour 0–23.
+ * @param int               $minute 0–59.
+ * @return array{start: DateTimeImmutable, end: DateTimeImmutable, week_id: string, timezone: string}
+ */
+function minimalcode_newsletter_scheduled_week( DateTimeImmutable $now, DateTimeZone $tz, $weekday, $hour, $minute ) {
+	$slot = minimalcode_newsletter_next_slot( $now, $tz, $weekday, $hour, $minute )->modify( '-7 days' );
+	return minimalcode_newsletter_previous_week( $slot, $tz );
+}
+
+/**
  * @param mixed $post Post row.
  * @return array{id: int, title: string, excerpt: string, url: string, date: string, category: string}|null
  */

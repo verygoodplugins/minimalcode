@@ -245,7 +245,7 @@ function minimalcode_newsletter_ensure_schedule() {
 	$armed  = (int) get_option( 'minimalcode_newsletter_armed_at', 0 );
 	$prev   = $next->modify( '-7 days' );
 	$age    = $now->getTimestamp() - $prev->getTimestamp();
-	$week   = minimalcode_newsletter_previous_week( $now, $tz );
+	$week   = minimalcode_newsletter_previous_week( $prev, $tz ); // Same week the cron run would send.
 	$status = minimalcode_newsletter_week_status( $week['week_id'] );
 	$claim  = get_option( 'minimalcode_nl_claim_' . $week['week_id'] );
 	$catchup = $armed > 0
@@ -894,11 +894,15 @@ function minimalcode_newsletter_begin( $trigger, $test_email = '' ) {
 		return new WP_Error( 'skip_disabled', 'Automatic weekly send is off.' );
 	}
 
-	$tz     = wp_timezone();
-	$now    = new DateTimeImmutable( 'now', $tz );
-	$week   = minimalcode_newsletter_previous_week( $now, $tz );
-	$posts  = minimalcode_newsletter_collect_posts( $week['start'], $week['end'] );
-	$status = minimalcode_newsletter_week_status( $week['week_id'] );
+	$tz   = wp_timezone();
+	$now  = new DateTimeImmutable( 'now', $tz );
+	$week = 'cron' === $trigger
+		? minimalcode_newsletter_scheduled_week( $now, $tz, $settings['weekday'], $settings['hour'], $settings['minute'] )
+		: minimalcode_newsletter_previous_week( $now, $tz );
+	// The planner derives the week from `now`; hand it the anchor it should use.
+	$plan_now = 'cron' === $trigger ? $week['end']->modify( '+1 second' ) : $now;
+	$posts    = minimalcode_newsletter_collect_posts( $week['start'], $week['end'] );
+	$status   = minimalcode_newsletter_week_status( $week['week_id'] );
 	$claim  = get_option( 'minimalcode_nl_claim_' . $week['week_id'] );
 	if ( $claim && 'failed' !== (string) $claim ) {
 		$status = '' !== $status ? $status : (string) $claim;
@@ -908,7 +912,7 @@ function minimalcode_newsletter_begin( $trigger, $test_email = '' ) {
 		'trigger'       => $trigger,
 		'enabled'       => $settings['enabled'],
 		'sends_allowed' => true,
-		'now'           => $now,
+		'now'           => $plan_now,
 		'timezone'      => $tz,
 		'posts'         => $posts,
 		'week_status'   => $status,
