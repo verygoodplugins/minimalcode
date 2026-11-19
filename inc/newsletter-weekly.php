@@ -402,6 +402,8 @@ function minimalcode_newsletter_collect_posts( DateTimeImmutable $start, DateTim
 			'order'               => 'DESC',
 			'ignore_sticky_posts' => true,
 			'no_found_rows'       => true,
+			// Password-protected posts are still "publish"; their content must never be mailed.
+			'has_password'        => false,
 			'date_query'          => array(
 				array(
 					'column'    => 'post_date',
