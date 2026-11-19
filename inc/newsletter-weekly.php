@@ -177,6 +177,34 @@ function minimalcode_newsletter_unschedule( $hook, $args = null ) {
 }
 
 /**
+ * Whether an Action Scheduler action is queued and not yet running.
+ *
+ * as_next_scheduled_action() also returns true for the action running right
+ * now, so a batch checking it would never queue its own successor or a 429
+ * retry.
+ *
+ * @param string $hook Hook.
+ * @param array  $args Args.
+ * @return bool
+ */
+function minimalcode_newsletter_as_pending( $hook, $args ) {
+	if ( function_exists( 'as_get_scheduled_actions' ) && class_exists( 'ActionScheduler_Store' ) ) {
+		$ids = as_get_scheduled_actions(
+			array(
+				'hook'     => $hook,
+				'args'     => $args,
+				'group'    => 'minimalcode-newsletter',
+				'status'   => ActionScheduler_Store::STATUS_PENDING,
+				'per_page' => 1,
+			),
+			'ids'
+		);
+		return ! empty( $ids );
+	}
+	return is_int( as_next_scheduled_action( $hook, $args, 'minimalcode-newsletter' ) );
+}
+
+/**
  * @param int    $timestamp Unix time.
  * @param string $hook Hook.
  * @param array  $args Args.
@@ -186,7 +214,7 @@ function minimalcode_newsletter_schedule_single( $timestamp, $hook, $args = arra
 	$timestamp = max( time() + 5, (int) $timestamp );
 	if ( minimalcode_newsletter_using_action_scheduler() ) {
 		wp_clear_scheduled_hook( $hook, $args );
-		if ( ! as_next_scheduled_action( $hook, $args, 'minimalcode-newsletter' ) ) {
+		if ( ! minimalcode_newsletter_as_pending( $hook, $args ) ) {
 			as_schedule_single_action( $timestamp, $hook, $args, 'minimalcode-newsletter' );
 		}
 		return;
