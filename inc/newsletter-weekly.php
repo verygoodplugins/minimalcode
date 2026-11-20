@@ -149,6 +149,20 @@ function minimalcode_newsletter_reply_to() {
 }
 
 /**
+ * The AutoJack portrait in the issue header. Theme URLs follow is_ssl(), which
+ * is false under WP-CLI, so a CLI send would link http://. Use the home URL's
+ * scheme so every send carries the same URL.
+ *
+ * @return string
+ */
+function minimalcode_newsletter_portrait_url() {
+	return set_url_scheme(
+		get_template_directory_uri() . '/assets/images/autojack-profile.jpg',
+		wp_parse_url( home_url(), PHP_URL_SCHEME )
+	);
+}
+
+/**
  * @return bool
  */
 function minimalcode_newsletter_using_action_scheduler() {
@@ -642,7 +656,7 @@ function minimalcode_newsletter_deliver_one( array $state, $email ) {
 			'week_label'       => $state['week_label'] ?? '',
 			'test'             => ! empty( $state['test'] ),
 			'sample'           => ! empty( $state['sample'] ),
-			'portrait_url'     => get_template_directory_uri() . '/assets/images/autojack-profile.jpg',
+			'portrait_url'     => minimalcode_newsletter_portrait_url(),
 		)
 	);
 	if ( empty( $message['headers']['List-Unsubscribe'] ) || empty( $message['headers']['List-Unsubscribe-Post'] ) ) {
@@ -1318,7 +1332,7 @@ function minimalcode_newsletter_maybe_preview() {
 			'site_name'       => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
 			'week_label'      => $week['start']->format( 'j M Y' ),
 			'sample'          => $sample,
-			'portrait_url'    => get_template_directory_uri() . '/assets/images/autojack-profile.jpg',
+			'portrait_url'    => minimalcode_newsletter_portrait_url(),
 		)
 	);
 	nocache_headers();
