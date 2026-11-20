@@ -635,6 +635,7 @@ function minimalcode_newsletter_deliver_one( array $state, $email ) {
 	$message = minimalcode_newsletter_message(
 		array(
 			'posts'            => $state['posts'],
+			'intro'            => $state['intro'] ?? null,
 			'unsubscribe_url'  => $url,
 			'site_url'         => home_url( '/' ),
 			'site_name'        => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
@@ -877,6 +878,7 @@ function minimalcode_newsletter_deliver_test( array $plan ) {
 		'week_label' => $plan['week_label'],
 		'post_ids'   => $plan['post_ids'],
 		'posts'      => $plan['posts'],
+		'intro'      => minimalcode_newsletter_find_intro( $plan['week_id'] ),
 		'test'       => true,
 		'sample'     => ! empty( $plan['sample'] ),
 	);
@@ -1030,6 +1032,8 @@ function minimalcode_newsletter_begin( $trigger, $test_email = '' ) {
 		'week_label'  => $plan['week_label'],
 		'post_ids'    => $plan['post_ids'],
 		'posts'       => $plan['posts'],
+		// Snapshot: every batch of this issue sends the same note.
+		'intro'       => minimalcode_newsletter_find_intro( $plan['week_id'] ),
 		'recipients'  => $plan['recipients'],
 		'offset'      => 0,
 		'sent'        => 0,
@@ -1308,6 +1312,7 @@ function minimalcode_newsletter_maybe_preview() {
 	$message = minimalcode_newsletter_message(
 		array(
 			'posts'           => $posts,
+			'intro'           => minimalcode_newsletter_find_intro( $week['week_id'] ),
 			'unsubscribe_url' => home_url( '/newsletter/unsubscribe/?token=preview' ),
 			'site_url'        => home_url( '/' ),
 			'site_name'       => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
@@ -1648,6 +1653,11 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			WP_CLI::log( 'next: ' . ( $next ? wp_date( 'c', $next ) : 'none' ) );
 			WP_CLI::log( 'configured: ' . ( $missing ? 'missing ' . implode( ', ', $missing ) : 'yes' ) );
 			WP_CLI::log( 'ci_blocked: ' . ( minimalcode_newsletter_ci_blocked() ? 'yes' : 'no' ) );
+			if ( $next ) {
+				$issue = minimalcode_newsletter_previous_week( ( new DateTimeImmutable( '@' . $next ) )->setTimezone( wp_timezone() ), wp_timezone() );
+				$intro = minimalcode_newsletter_find_intro( $issue['week_id'] );
+				WP_CLI::log( 'intro: ' . minimalcode_newsletter_intro_slug( $issue['week_id'] ) . ' ' . ( $intro ? 'ready (#' . $intro['post_id'] . ')' : 'none, standing copy' ) );
+			}
 		}
 
 		/**
@@ -1666,6 +1676,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			$message = minimalcode_newsletter_message(
 				array(
 					'posts'           => $posts,
+					'intro'           => minimalcode_newsletter_find_intro( $week['week_id'] ),
 					'unsubscribe_url' => home_url( '/newsletter/unsubscribe/?token=preview' ),
 					'site_url'        => home_url( '/' ),
 					'site_name'       => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),

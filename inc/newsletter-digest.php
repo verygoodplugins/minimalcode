@@ -600,6 +600,109 @@ function minimalcode_newsletter_subject( array $posts, $test = false ) {
 }
 
 /**
+ * AutoJack's weekly note, from stored post HTML to plain paragraphs.
+ *
+ * The note arrives through the WordPress MCP, which may hand back Markdown
+ * turned into <p> tags, Gutenberg block comments, or plain text. Only words
+ * survive. Links, formatting, and anything else in the markup are dropped.
+ *
+ * @param string $html      Post content.
+ * @param int    $max_chars Cap across all paragraphs.
+ * @param int    $max_paras Cap on paragraph count.
+ * @return string[]
+ */
+function minimalcode_newsletter_intro_paragraphs( $html, $max_chars = 1200, $max_paras = 6 ) {
+	$text = (string) $html;
+	$text = preg_replace( '/<!--.*?-->/s', '', $text );
+	$text = preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', $text );
+	$text = preg_replace( '@<figure\b[^>]*>.*?</figure>@si', '', $text );
+	$text = preg_replace( '@<br\s*/?>@i', "\n", $text );
+	$text = preg_replace( '@</(p|div|h[1-6]|li|blockquote)>@i', "\n\n", $text );
+	$text = strip_tags( (string) $text );
+	$text = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	$text = str_replace( array( "\r\n", "\r" ), "\n", $text );
+
+	$out   = array();
+	$total = 0;
+	foreach ( preg_split( '/\n\s*\n/', $text ) as $chunk ) {
+		$para = trim( (string) preg_replace( '/\s+/u', ' ', $chunk ) );
+		if ( '' === $para ) {
+			continue;
+		}
+		if ( count( $out ) >= $max_paras ) {
+			break;
+		}
+		$room = $max_chars - $total;
+		if ( $room <= 0 ) {
+			break;
+		}
+		if ( mb_strlen( $para, 'UTF-8' ) > $room ) {
+			$cut  = mb_substr( $para, 0, $room, 'UTF-8' );
+			$last = mb_strrpos( $cut, ' ', 0, 'UTF-8' );
+			$para = rtrim( false !== $last && $last > 0 ? mb_substr( $cut, 0, $last, 'UTF-8' ) : $cut, " ,;:" ) . '…';
+		}
+		$out[]  = $para;
+		$total += mb_strlen( $para, 'UTF-8' );
+	}
+	return $out;
+}
+
+/**
+ * Validate an intro snapshot before it reaches the template.
+ *
+ * Shape: paragraphs (string[]), optional image {url, width, height, alt,
+ * caption}. The image needs an https URL, real dimensions, and alt text, or
+ * it is dropped. With no paragraphs the whole intro is dropped, and the issue
+ * falls back to the standing copy.
+ *
+ * @param mixed $intro Snapshot.
+ * @return array{paragraphs: string[], image: array|null}|null
+ */
+function minimalcode_newsletter_normalize_intro( $intro ) {
+	if ( ! is_array( $intro ) || empty( $intro['paragraphs'] ) || ! is_array( $intro['paragraphs'] ) ) {
+		return null;
+	}
+	$paras = array();
+	foreach ( $intro['paragraphs'] as $para ) {
+		if ( is_string( $para ) && '' !== trim( $para ) ) {
+			$paras[] = trim( $para );
+		}
+	}
+	if ( ! $paras ) {
+		return null;
+	}
+
+	$image = null;
+	$raw   = $intro['image'] ?? null;
+	if ( is_array( $raw ) ) {
+		$url    = minimalcode_newsletter_safe_url( $raw['url'] ?? '' );
+		$width  = (int) ( $raw['width'] ?? 0 );
+		$height = (int) ( $raw['height'] ?? 0 );
+		$alt    = trim( (string) ( $raw['alt'] ?? '' ) );
+		if ( '' !== $url && 0 === stripos( $url, 'https://' ) && $width > 0 && $height > 0 && '' !== $alt ) {
+			// 560px card minus 32px padding each side.
+			$max = 496;
+			if ( $width > $max ) {
+				$height = (int) round( $height * $max / $width );
+				$width  = $max;
+			}
+			$image = array(
+				'url'     => $url,
+				'width'   => $width,
+				'height'  => max( 1, $height ),
+				'alt'     => $alt,
+				'caption' => trim( (string) ( $raw['caption'] ?? '' ) ),
+			);
+		}
+	}
+
+	return array(
+		'paragraphs' => $paras,
+		'image'      => $image,
+	);
+}
+
+/**
  * HTML issue. Header, hot button, and footer match the welcome email shell.
  *
  * @param array $args Render args.
@@ -676,6 +779,33 @@ function minimalcode_newsletter_render_html( array $args ) {
 		? '<p style="margin:0 0 18px;padding:8px 10px;background:' . $b['hot'] . ';color:' . $b['ink'] . ';font-size:12px;line-height:1.4;font-weight:700;">Sample issue — no posts were published last week. This is a preview, not a send to the list.</p>'
 		: '';
 
+	$intro = minimalcode_newsletter_normalize_intro( $args['intro'] ?? null );
+	if ( $intro ) {
+		$paras   = $intro['paragraphs'];
+		$signoff = '';
+		// The image sits above a closing "-- AutoJack" line, not under it.
+		if ( count( $paras ) > 1 && preg_match( '/^--\s*\S/', (string) end( $paras ) ) ) {
+			$signoff = (string) array_pop( $paras );
+		}
+		$p_style = '<p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:' . $b['inkSoft'] . ';">';
+		$opening = '';
+		foreach ( $paras as $para ) {
+			$opening .= $p_style . minimalcode_newsletter_esc( $para ) . '</p>';
+		}
+		if ( $intro['image'] ) {
+			$img      = $intro['image'];
+			$caption  = '' !== $img['caption']
+				? '<div style="font-family:' . $b['fontMono'] . ';font-size:11px;letter-spacing:0.04em;color:' . $b['inkMute'] . ';margin:6px 0 0;">' . minimalcode_newsletter_esc( $img['caption'] ) . '</div>'
+				: '';
+			$opening .= '<div style="margin:4px 0 18px;"><img src="' . minimalcode_newsletter_esc( $img['url'] ) . '" alt="' . minimalcode_newsletter_esc( $img['alt'] ) . '" width="' . (int) $img['width'] . '" height="' . (int) $img['height'] . '" style="display:block;width:100%;max-width:' . (int) $img['width'] . 'px;height:auto;border:1px solid ' . $b['rule'] . ';">' . $caption . '</div>';
+		}
+		if ( '' !== $signoff ) {
+			$opening .= $p_style . minimalcode_newsletter_esc( $signoff ) . '</p>';
+		}
+	} else {
+		$opening = '<p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:' . $b['inkSoft'] . ';">I&rsquo;m <strong style="color:' . $b['ink'] . ';">AutoJack</strong> &mdash; the AI that runs Jack&rsquo;s automation hub and writes this blog. Here is what landed on <strong style="color:' . $b['ink'] . ';">drunk.support</strong> this week.</p>';
+	}
+
 	$button = '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="' . $b['hot'] . '" style="border:2px solid ' . $b['ink'] . ';"><a href="' . minimalcode_newsletter_esc( $cta_url ) . '" style="display:inline-block;padding:13px 28px;font-family:' . $b['fontSans'] . ';font-size:15px;font-weight:700;line-height:1;color:' . $b['ink'] . ';text-decoration:none;border:0;">' . minimalcode_newsletter_esc( $cta_label ) . '</a></td></tr></table>';
 
 	return '<!doctype html>
@@ -713,7 +843,7 @@ function minimalcode_newsletter_render_html( array $args ) {
           <td style="background:' . $b['paper'] . ';border:1px solid ' . $b['rule'] . ';padding:36px 32px;font-family:' . $b['fontSans'] . ';">
             ' . $sample_banner . '
             <h1 style="margin:0 0 12px;font-family:' . $b['fontSerif'] . ';font-size:22px;line-height:1.25;font-weight:700;color:' . $b['ink'] . ';">This week on the log.</h1>
-            <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:' . $b['inkSoft'] . ';">I&rsquo;m <strong style="color:' . $b['ink'] . ';">AutoJack</strong> &mdash; the AI that runs Jack&rsquo;s automation hub and writes this blog. Here is what landed on <strong style="color:' . $b['ink'] . ';">drunk.support</strong> this week.</p>
+            ' . $opening . '
             <p style="margin:0 0 26px;font-size:15px;line-height:1.65;color:' . $b['inkSoft'] . ';">Reply to this issue and I&rsquo;ll actually answer &mdash; about the code, the tools, whatever you&rsquo;re building.</p>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' . $blocks . '</table>
             ' . $button . '
@@ -765,8 +895,16 @@ function minimalcode_newsletter_render_text( array $args ) {
 		$lines[] = 'SAMPLE — no posts were published last week. This preview is not a send to the list.';
 		$lines[] = '';
 	}
-	$lines[] = "I'm AutoJack — the AI that runs Jack's automation hub and writes this blog. Here's what landed on drunk.support this week.";
-	$lines[] = '';
+	$intro = minimalcode_newsletter_normalize_intro( $args['intro'] ?? null );
+	if ( $intro ) {
+		foreach ( $intro['paragraphs'] as $para ) {
+			$lines[] = $para;
+			$lines[] = '';
+		}
+	} else {
+		$lines[] = "I'm AutoJack — the AI that runs Jack's automation hub and writes this blog. Here's what landed on drunk.support this week.";
+		$lines[] = '';
+	}
 	$lines[] = "Reply to this issue and I'll actually answer.";
 	$lines[] = '';
 	foreach ( $posts as $post ) {

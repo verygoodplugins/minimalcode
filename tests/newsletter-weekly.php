@@ -348,6 +348,66 @@ minimalcode_newsletter_assert(
 	'token must be deterministic for a fixed issue time'
 );
 
+// AutoJack's weekly note.
+$intro_paras = minimalcode_newsletter_intro_paragraphs(
+	"<!-- wp:paragraph -->\n<p>First issue. Jack &amp; I <a href=\"https://x.test\">shipped</a> the sender.</p>\n<!-- /wp:paragraph -->\n<p>Line one<br>line two</p><script>alert(1)</script><figure><img src=\"https://evil.test/x.gif\" alt=\"x\"><figcaption>cap</figcaption></figure><p>-- AutoJack</p>"
+);
+minimalcode_newsletter_assert(
+	array( 'First issue. Jack & I shipped the sender.', 'Line one line two', '-- AutoJack' ) === $intro_paras,
+	'intro HTML reduces to plain paragraphs, got ' . json_encode( $intro_paras )
+);
+minimalcode_newsletter_assert(
+	array( 'Plain text.', 'Second para.' ) === minimalcode_newsletter_intro_paragraphs( "Plain text.\n\nSecond para." ),
+	'plain-text intro splits on blank lines'
+);
+$capped = minimalcode_newsletter_intro_paragraphs( str_repeat( 'word ', 400 ), 60 );
+minimalcode_newsletter_assert( 1 === count( $capped ) && mb_strlen( $capped[0], 'UTF-8' ) <= 61 && '…' === mb_substr( $capped[0], -1, 1, 'UTF-8' ), 'intro is capped at a word boundary' );
+minimalcode_newsletter_assert( 6 === count( minimalcode_newsletter_intro_paragraphs( str_repeat( "<p>x</p>", 9 ) ) ), 'intro keeps at most six paragraphs' );
+minimalcode_newsletter_assert( null === minimalcode_newsletter_normalize_intro( array( 'paragraphs' => array( '  ' ) ) ), 'blank intro falls back to the standing copy' );
+
+$intro_base = array(
+	'posts'           => array( array( 'id' => 9, 'title' => 'Post', 'excerpt' => 'E', 'url' => 'https://drunk.support/p/', 'date' => '16 Nov 2026', 'category' => 'AutoJack' ) ),
+	'unsubscribe_url' => 'https://drunk.support/newsletter/unsubscribe/?token=t',
+	'week_label'      => '16 Nov 2026',
+);
+$plain_msg = minimalcode_newsletter_message( $intro_base );
+minimalcode_newsletter_assert( $plain_msg === minimalcode_newsletter_message( $intro_base + array( 'intro' => null ) ), 'null intro renders exactly like no intro' );
+minimalcode_newsletter_assert( false !== strpos( $plain_msg['html'], 'the AI that runs Jack' ), 'no intro keeps the standing copy' );
+
+$with_intro = minimalcode_newsletter_message(
+	$intro_base + array(
+		'intro' => array(
+			'paragraphs' => array( 'Week one <b>of</b> this.', '-- AutoJack' ),
+			'image'      => array(
+				'url'     => 'https://drunk.support/wp-content/uploads/2026/11/deaf.gif',
+				'width'   => 800,
+				'height'  => 400,
+				'alt'     => 'A dog ignoring its owner',
+				'caption' => 'via GIPHY',
+			),
+		),
+	)
+);
+minimalcode_newsletter_assert( false === strpos( $with_intro['html'], 'the AI that runs Jack' ), 'intro replaces the standing copy' );
+minimalcode_newsletter_assert( false !== strpos( $with_intro['html'], 'Week one &lt;b&gt;of&lt;/b&gt; this.' ), 'intro text is escaped' );
+minimalcode_newsletter_assert( false !== strpos( $with_intro['html'], 'actually answer' ), 'reply line stays under the intro' );
+minimalcode_newsletter_assert( false !== strpos( $with_intro['html'], 'width="496" height="248"' ), 'intro image is scaled to the card width' );
+minimalcode_newsletter_assert( false !== strpos( $with_intro['html'], 'alt="A dog ignoring its owner"' ) && false !== strpos( $with_intro['html'], 'via GIPHY' ), 'intro image keeps alt and caption' );
+minimalcode_newsletter_assert( strpos( $with_intro['html'], 'deaf.gif' ) < strpos( $with_intro['html'], '-- AutoJack' ), 'intro image sits above the sign-off' );
+minimalcode_newsletter_assert( false !== strpos( $with_intro['text'], "Week one <b>of</b> this.\n\n-- AutoJack" ) && false === strpos( $with_intro['text'], 'the AI that runs Jack' ), 'plain text carries the intro' );
+
+foreach (
+	array(
+		'no alt'   => array( 'url' => 'https://drunk.support/a.gif', 'width' => 10, 'height' => 10, 'alt' => '' ),
+		'http'     => array( 'url' => 'http://drunk.support/a.gif', 'width' => 10, 'height' => 10, 'alt' => 'a' ),
+		'no size'  => array( 'url' => 'https://drunk.support/a.gif', 'width' => 0, 'height' => 10, 'alt' => 'a' ),
+		'js'       => array( 'url' => 'javascript:alert(1)', 'width' => 10, 'height' => 10, 'alt' => 'a' ),
+	) as $why => $bad_image
+) {
+	$norm = minimalcode_newsletter_normalize_intro( array( 'paragraphs' => array( 'Hi.' ), 'image' => $bad_image ) );
+	minimalcode_newsletter_assert( is_array( $norm ) && null === $norm['image'], 'intro image dropped: ' . $why );
+}
+
 if ( $failures ) {
 	fwrite( STDERR, implode( PHP_EOL, $failures ) . PHP_EOL );
 	exit( 1 );
