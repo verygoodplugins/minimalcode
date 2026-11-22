@@ -461,7 +461,7 @@ function minimalcode_body_classes($classes) {
 add_filter('body_class', 'minimalcode_body_classes');
 
 /**
- * Virtual templated pages — /dev-pulse/ and /colophon/.
+ * Virtual templated pages — /dev-pulse/, /colophon/ and /subscribe/.
  *
  * Avoids needing a corresponding WP page in wp-admin; the templates live in
  * version control. Rewrite rules are auto-flushed on theme switch.
@@ -474,6 +474,7 @@ function minimalcode_virtual_routes() {
     return array(
         'dev-pulse' => 'page-dev-pulse.php',
         'colophon'  => 'page-colophon.php',
+        'subscribe' => 'page-subscribe.php',
     );
 }
 
@@ -512,8 +513,8 @@ function minimalcode_legacy_page_redirects() {
 add_action( 'template_redirect', 'minimalcode_legacy_page_redirects' );
 
 /**
- * Auto-flush rewrite rules on theme switch so /dev-pulse/ and /colophon/
- * resolve immediately — no manual options-permalink.php save required.
+ * Auto-flush rewrite rules on theme switch so /dev-pulse/, /colophon/ and
+ * /subscribe/ resolve immediately — no manual options-permalink.php save required.
  */
 function minimalcode_flush_virtual_rewrites_on_switch() {
     minimalcode_register_virtual_routes();

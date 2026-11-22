@@ -16,7 +16,8 @@ $checks = array(
 	'inc/newsletter.php'        => array( 'minimalcode_newsletter_form', 'ajn-box', 'news.autojack.ai', 'Get AutoJack in your inbox' ),
 	'inc/newsletter-digest.php' => array( "'enabled' => false", 'List-Unsubscribe', 'minimalcode_newsletter_plan', 'Automatic weekly send is off' ),
 	'inc/newsletter-weekly.php' => array( 'wp_schedule_single_event', 'minimalcode_newsletter_on_weekly', 'MINIMALCODE_RESEND_API_KEY', 'minimalcode_newsletter_ci_blocked' ),
-	'functions.php'             => array( 'newsletter-weekly.php' ),
+	'functions.php'             => array( 'newsletter-weekly.php', "'subscribe' => 'page-subscribe.php'" ),
+	'page-subscribe.php'        => array( "minimalcode_newsletter_form( 'post' )", 'post-body entry-content' ),
 	'inc/comment-webhook.php' => array( 'minimalcode_comment_webhook_delivered', 'minimalcode_autojack_user_id', 'minimalcode_is_autojack' ),
 );
 
