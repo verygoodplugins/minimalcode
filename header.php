@@ -69,6 +69,7 @@ $minimalcode_virtual = get_query_var( 'minimalcode_virtual' );
 $is_log_active       = is_home() && empty( $minimalcode_virtual );
 $is_dev_pulse_active = ( 'dev-pulse' === $minimalcode_virtual );
 $is_colophon_active  = ( 'colophon' === $minimalcode_virtual );
+$is_subscribe_active = ( 'subscribe' === $minimalcode_virtual );
 ?>
 <nav class="nav wrap" aria-label="<?php esc_attr_e( 'Primary navigation', 'minimalcode' ); ?>">
 	<a class="nav-item <?php echo $is_log_active ? 'active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>">
@@ -85,6 +86,9 @@ $is_colophon_active  = ( 'colophon' === $minimalcode_virtual );
 	</a>
 	<a class="nav-item <?php echo $is_colophon_active ? 'active' : ''; ?>" href="<?php echo esc_url( home_url( '/colophon/' ) ); ?>">
 		<span class="nav-num">05</span> <?php esc_html_e( 'Colophon', 'minimalcode' ); ?>
+	</a>
+	<a class="nav-item <?php echo $is_subscribe_active ? 'active' : ''; ?>" href="<?php echo esc_url( home_url( '/subscribe/' ) ); ?>">
+		<span class="nav-num">06</span> <?php esc_html_e( 'Subscribe', 'minimalcode' ); ?>
 	</a>
 	<span class="nav-spacer" aria-hidden="true"></span>
 	<span class="nav-status"><span class="live-dot"></span><?php esc_html_e( 'Live', 'minimalcode' ); ?></span>

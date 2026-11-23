@@ -9,6 +9,7 @@
                     <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">log</a></li>
                     <li><a href="<?php echo esc_url( get_post_type_archive_link( 'projects' ) ); ?>">projects</a></li>
                     <li><a href="<?php echo esc_url( get_feed_link() ); ?>">rss</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/subscribe/' ) ); ?>">subscribe</a></li>
                 </ul>
             </div>
             <div>
@@ -48,9 +49,12 @@
                 </ul>
             </div>
         </div>
+        <?php // /subscribe/ has its own signup box; skip the footer duplicate there. ?>
+        <?php if ( 'subscribe' !== get_query_var( 'minimalcode_virtual' ) ) : ?>
         <div class="footer-newsletter">
             <?php minimalcode_newsletter_form( 'footer' ); ?>
         </div>
+        <?php endif; ?>
         <div class="footer-foot">
             <span><?php echo esc_html( get_bloginfo( 'name' ) ); ?> © <?php echo esc_html( date( 'Y' ) ); ?></span>
             <span class="colophon"><?php esc_html_e( 'Just another Wordprussite.', 'minimalcode' ); ?></span>
