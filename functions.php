@@ -588,6 +588,19 @@ add_filter('template_include', function ($template) {
 });
 
 /**
+ * Give /subscribe/ its own document title. Virtual routes resolve as the blog
+ * index, so WordPress would otherwise title the page "Site – Tagline".
+ */
+add_filter('document_title_parts', function ($parts) {
+    if ('subscribe' === get_query_var('minimalcode_virtual')) {
+        $parts['title'] = __('Subscribe', 'minimalcode');
+        $parts['site']  = get_bloginfo('name', 'display');
+        unset($parts['tagline']);
+    }
+    return $parts;
+});
+
+/**
  * Serve /llms.txt — a Markdown guide for LLMs and AI crawlers, per the
  * emerging llmstxt.org convention. drunk.support is a site *about* AI, so we
  * actively invite assistants to read and cite it. Lists the canonical entry
